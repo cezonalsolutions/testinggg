@@ -2,170 +2,153 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
 
-<title>CEZOO UPI Intent Test</title>
+<title>CEZOO ₹1 UPI</title>
 
-<!-- IMPORTANT: CUSTOM CHECKOUT -->
-<script src="https://checkout.razorpay.com/v1/razorpay.js"></script>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
 <style>
 *{
-    box-sizing:border-box;
-    margin:0;
-    padding:0;
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
 }
 
 body{
-    min-height:100vh;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    background:#f5f7f6;
-    font-family:Arial,sans-serif;
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:#f5f7f6;
+  font-family:Arial,sans-serif;
 }
 
-.box{
-    width:92%;
-    max-width:390px;
-    background:#fff;
-    padding:26px;
-    border-radius:20px;
-    box-shadow:0 10px 35px rgba(0,0,0,.1);
+.card{
+  width:92%;
+  max-width:390px;
+  background:#fff;
+  padding:25px;
+  border-radius:20px;
+  box-shadow:0 10px 35px rgba(0,0,0,.08);
 }
 
 h2{
-    margin-bottom:8px;
+  margin-bottom:8px;
 }
 
 .amount{
-    font-size:40px;
-    font-weight:800;
-    margin:25px 0;
-    text-align:center;
+  font-size:42px;
+  font-weight:800;
+  text-align:center;
+  margin:25px 0;
 }
 
 input{
-    width:100%;
-    height:52px;
-    border:1px solid #ddd;
-    border-radius:12px;
-    padding:0 14px;
-    font-size:16px;
-    margin-bottom:20px;
+  width:100%;
+  height:52px;
+  border:1px solid #ddd;
+  border-radius:12px;
+  padding:0 14px;
+  font-size:16px;
+  outline:none;
 }
 
-.pay-main{
-    width:100%;
-    height:54px;
-    border:none;
-    border-radius:12px;
-    background:#16a34a;
-    color:#fff;
-    font-size:17px;
-    font-weight:700;
-    cursor:pointer;
+#payBtn{
+  width:100%;
+  height:54px;
+  margin-top:15px;
+  border:0;
+  border-radius:12px;
+  background:#16a34a;
+  color:white;
+  font-size:17px;
+  font-weight:700;
 }
 
 .apps{
-    display:none;
-    margin-top:22px;
+  display:none;
+  margin-top:22px;
 }
 
 .apps.show{
-    display:block;
+  display:block;
 }
 
-.apps-title{
-    margin-bottom:12px;
-    font-weight:700;
+.app{
+  width:100%;
+  height:56px;
+  margin-top:10px;
+  border:1px solid #e5e5e5;
+  border-radius:14px;
+  background:white;
+  font-size:16px;
+  font-weight:700;
 }
 
-.app-btn{
-    width:100%;
-    height:54px;
-    border:1px solid #ddd;
-    background:#fff;
-    border-radius:12px;
-    margin-bottom:10px;
-    font-size:16px;
-    font-weight:700;
-    cursor:pointer;
+.status{
+  text-align:center;
+  margin-top:15px;
+  font-size:14px;
 }
 
-#status{
-    margin-top:16px;
-    text-align:center;
-    font-size:14px;
+.spinner{
+  width:26px;
+  height:26px;
+  margin:14px auto 0;
+  border:3px solid #ddd;
+  border-top-color:#16a34a;
+  border-radius:50%;
+  animation:spin .7s linear infinite;
+  display:none;
+}
+
+@keyframes spin{
+  to{
+    transform:rotate(360deg);
+  }
 }
 </style>
 </head>
 
 <body>
 
-<div class="box">
+<div class="card">
 
-    <h2>CEZOO Payment</h2>
+  <h2>CEZOO Payment</h2>
 
-    <div class="amount">
-        ₹1
-    </div>
+  <div class="amount">₹1</div>
 
-    <input
-        id="mobile"
-        type="tel"
-        maxlength="10"
-        placeholder="Enter mobile number"
-    >
+  <input
+    id="mobile"
+    type="tel"
+    maxlength="10"
+    placeholder="Enter mobile number"
+  >
 
-    <button
-        class="pay-main"
-        id="payBtn"
-    >
-        Pay ₹1
+  <button id="payBtn">
+    Pay ₹1
+  </button>
+
+  <div id="apps" class="apps">
+
+    <button class="app" onclick="payUPI()">
+      Google Pay
     </button>
 
+    <button class="app" onclick="payUPI()">
+      PhonePe
+    </button>
 
-    <div
-        class="apps"
-        id="apps"
-    >
+    <button class="app" onclick="payUPI()">
+      Paytm
+    </button>
 
-        <div class="apps-title">
-            Choose UPI App
-        </div>
+  </div>
 
-        <button
-            class="app-btn"
-            onclick="startUpiPayment('phonepe')"
-        >
-            PhonePe
-        </button>
+  <div id="spinner" class="spinner"></div>
 
-        <button
-            class="app-btn"
-            onclick="startUpiPayment('paytm')"
-        >
-            Paytm
-        </button>
-
-        <button
-            class="app-btn"
-            onclick="startUpiPayment('gpay')"
-        >
-            Google Pay
-        </button>
-
-        <button
-            class="app-btn"
-            onclick="startUpiPayment('any')"
-        >
-            Other UPI Apps
-        </button>
-
-    </div>
-
-    <div id="status"></div>
+  <div id="status" class="status"></div>
 
 </div>
 
@@ -173,343 +156,342 @@ input{
 <script>
 
 const BACKEND =
-    "https://razropay.onrender.com";
+  "https://razropay.onrender.com";
 
-const KEY_ID =
-    "rzp_live_SqrUSaPO5pA6gt";
+const KEY =
+  "rzp_live_SqrUSaPO5pA6gt";
 
-
-let currentOrder = null;
-
-let customerMobile = "";
-
-let razorpay = null;
+let order = null;
+let mobile = "";
 
 
-/* ================================
-   CREATE CUSTOM CHECKOUT INSTANCE
-================================ */
-
-razorpay = new Razorpay({
-    key: KEY_ID
-});
-
-
-/* ================================
-   PAYMENT SUCCESS
-================================ */
-
-razorpay.on(
-    "payment.success",
-    async function(response){
-
-        console.log(
-            "PAYMENT SUCCESS",
-            response
-        );
-
-        document.getElementById("status")
-            .innerText =
-            "Payment received. Verifying...";
-
-
-        try{
-
-            const verify =
-                await fetch(
-                    BACKEND + "/verify-payment",
-                    {
-
-                        method:"POST",
-
-                        headers:{
-                            "Content-Type":
-                            "application/json"
-                        },
-
-                        body:JSON.stringify({
-
-                            razorpay_order_id:
-                                response.razorpay_order_id,
-
-                            razorpay_payment_id:
-                                response.razorpay_payment_id,
-
-                            razorpay_signature:
-                                response.razorpay_signature
-
-                        })
-
-                    }
-                );
-
-
-            const result =
-                await verify.json();
-
-
-            console.log(
-                "VERIFY RESULT",
-                result
-            );
-
-
-            if(
-                result.success &&
-                result.verified &&
-                result.paid
-            ){
-
-                document.getElementById("status")
-                    .innerText =
-                    "✅ ₹1 Payment Successful";
-
-                alert(
-                    "₹1 Payment Successful"
-                );
-
-            }
-            else{
-
-                document.getElementById("status")
-                    .innerText =
-                    "Payment verification pending";
-
-            }
-
-        }
-        catch(error){
-
-            console.error(error);
-
-            document.getElementById("status")
-                .innerText =
-                "Verification failed";
-
-        }
-
-    }
-);
-
-
-/* ================================
-   PAYMENT ERROR
-================================ */
-
-razorpay.on(
-    "payment.error",
-    function(response){
-
-        console.error(
-            "PAYMENT ERROR",
-            response
-        );
-
-        let message =
-            response?.error?.description ||
-            "Payment failed";
-
-        document.getElementById("status")
-            .innerText =
-            "❌ " + message;
-
-    }
-);
-
-
-
-/* ================================
-   PAY ₹1
-================================ */
+/* ===========================
+   CREATE ₹1 ORDER
+=========================== */
 
 document
 .getElementById("payBtn")
 .addEventListener(
-    "click",
-    async function(){
+  "click",
+  async function(){
 
-        const mobile =
-            document
-            .getElementById("mobile")
-            .value
-            .trim();
+    mobile =
+      document
+      .getElementById("mobile")
+      .value
+      .trim();
 
-
-        if(
-            !/^[6-9][0-9]{9}$/.test(mobile)
-        ){
-
-            alert(
-                "Enter valid mobile number"
-            );
-
-            return;
-
-        }
-
-
-        customerMobile =
-            mobile;
-
-
-        document.getElementById("status")
-            .innerText =
-            "Creating payment...";
-
-
-        try{
-
-            const response =
-                await fetch(
-                    BACKEND +
-                    "/create-order",
-                    {
-
-                        method:"POST",
-
-                        headers:{
-                            "Content-Type":
-                            "application/json"
-                        },
-
-                        body:JSON.stringify({
-                            amount:100
-                        })
-
-                    }
-                );
-
-
-            const data =
-                await response.json();
-
-
-            console.log(
-                "ORDER",
-                data
-            );
-
-
-            if(
-                !data.success ||
-                !data.order ||
-                !data.order.id
-            ){
-
-                throw new Error(
-                    data.message ||
-                    "Order creation failed"
-                );
-
-            }
-
-
-            currentOrder =
-                data.order;
-
-
-            document
-            .getElementById("apps")
-            .classList
-            .add("show");
-
-
-            document.getElementById("status")
-                .innerText =
-                "Choose UPI app";
-
-        }
-        catch(error){
-
-            console.error(error);
-
-            document.getElementById("status")
-                .innerText =
-                error.message;
-
-        }
-
-    }
-);
-
-
-
-/* ================================
-   START UPI INTENT
-================================ */
-
-function startUpiPayment(app){
-
-    if(!currentOrder){
-
-        alert(
-            "Create payment first"
-        );
-
-        return;
-
+    if(
+      !/^[6-9][0-9]{9}$/.test(mobile)
+    ){
+      alert("Enter valid mobile number");
+      return;
     }
 
-
-    document.getElementById("status")
-        .innerText =
-        "Opening " +
-        app +
-        "...";
-
-
-    const paymentData = {
-
-        amount:
-            currentOrder.amount,
-
-        currency:
-            currentOrder.currency ||
-            "INR",
-
-        order_id:
-            currentOrder.id,
-
-        contact:
-            customerMobile,
-
-        email:
-            "payments@cezoo.co.in",
-
-        method:
-            "upi",
-
-        "_[flow]":
-            "intent",
-
-        upi_app:
-            app
-
-    };
-
-
-    console.log(
-        "PAYMENT DATA",
-        paymentData
-    );
-
+    setStatus("Creating payment...");
 
     try{
 
-        razorpay.createPayment(
-            paymentData
+      const r =
+        await fetch(
+          BACKEND + "/create-order",
+          {
+            method:"POST",
+
+            headers:{
+              "Content-Type":
+              "application/json"
+            },
+
+            body:JSON.stringify({
+              amount:100
+            })
+          }
         );
+
+      const data =
+        await r.json();
+
+      if(
+        !data.success ||
+        !data.order?.id
+      ){
+        throw new Error(
+          data.message ||
+          "Order creation failed"
+        );
+      }
+
+      order =
+        data.order;
+
+      document
+      .getElementById("apps")
+      .classList
+      .add("show");
+
+      setStatus(
+        "Choose UPI app"
+      );
 
     }
     catch(error){
 
-        console.error(error);
+      console.error(error);
 
-        document.getElementById("status")
-            .innerText =
-            "Unable to open UPI app";
+      setStatus(
+        error.message
+      );
 
     }
+
+  }
+);
+
+
+/* ===========================
+   START UPI INTENT
+=========================== */
+
+function payUPI(){
+
+  if(!order){
+    return;
+  }
+
+  showSpinner(true);
+
+  setStatus(
+    "Opening UPI..."
+  );
+
+
+  const options = {
+
+    key:KEY,
+
+    amount:
+      order.amount,
+
+    currency:
+      order.currency,
+
+    order_id:
+      order.id,
+
+    name:
+      "CEZOO",
+
+    description:
+      "₹1 Payment",
+
+    prefill:{
+      contact:
+        "+91" + mobile
+    },
+
+    method:{
+      upi:true
+    },
+
+    config:{
+
+      display:{
+
+        blocks:{
+
+          upi:{
+
+            name:
+              "UPI",
+
+            instruments:[
+              {
+                method:"upi"
+              }
+            ]
+
+          }
+
+        },
+
+        sequence:[
+          "block.upi"
+        ],
+
+        preferences:{
+          show_default_blocks:false
+        }
+
+      }
+
+    },
+
+    handler:
+      async function(response){
+
+        showSpinner(true);
+
+        setStatus(
+          "Verifying payment..."
+        );
+
+        await verifyPayment(
+          response
+        );
+
+      },
+
+    modal:{
+
+      ondismiss:function(){
+
+        showSpinner(false);
+
+        setStatus(
+          "Payment cancelled"
+        );
+
+      }
+
+    }
+
+  };
+
+
+  const rzp =
+    new Razorpay(options);
+
+
+  rzp.on(
+    "payment.failed",
+    function(response){
+
+      console.log(
+        response.error
+      );
+
+      showSpinner(false);
+
+      setStatus(
+        "Payment failed"
+      );
+
+    }
+  );
+
+
+  rzp.open();
+
+}
+
+
+/* ===========================
+   VERIFY
+=========================== */
+
+async function verifyPayment(response){
+
+  try{
+
+    const r =
+      await fetch(
+        BACKEND +
+        "/verify-payment",
+        {
+
+          method:"POST",
+
+          headers:{
+            "Content-Type":
+              "application/json"
+          },
+
+          body:JSON.stringify({
+
+            razorpay_order_id:
+              response
+              .razorpay_order_id,
+
+            razorpay_payment_id:
+              response
+              .razorpay_payment_id,
+
+            razorpay_signature:
+              response
+              .razorpay_signature
+
+          })
+
+        }
+      );
+
+
+    const data =
+      await r.json();
+
+
+    showSpinner(false);
+
+
+    if(
+      data.success &&
+      data.paid &&
+      data.status ===
+      "captured"
+    ){
+
+      setStatus(
+        "✅ ₹1 Payment Successful"
+      );
+
+    }
+    else{
+
+      setStatus(
+        "Payment verification pending"
+      );
+
+    }
+
+  }
+  catch(error){
+
+    console.error(error);
+
+    showSpinner(false);
+
+    setStatus(
+      "Verification error"
+    );
+
+  }
+
+}
+
+
+/* ===========================
+   HELPERS
+=========================== */
+
+function setStatus(text){
+
+  document
+  .getElementById("status")
+  .innerText =
+    text;
+
+}
+
+function showSpinner(show){
+
+  document
+  .getElementById("spinner")
+  .style
+  .display =
+    show
+    ? "block"
+    : "none";
 
 }
 
