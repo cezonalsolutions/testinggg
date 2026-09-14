@@ -2,444 +2,622 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>CEZOO UPI Pay</title>
+<title>CEZOO UPI Payment</title>
 
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
 <style>
 *{
-  box-sizing:border-box;
-  margin:0;
-  padding:0;
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
 }
 
 body{
-  min-height:100vh;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  background:#f5f7f5;
-  font-family:Arial,sans-serif;
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:#f5f7f6;
+    font-family:Arial, sans-serif;
+    padding:20px;
 }
 
-.card{
-  width:92%;
-  max-width:390px;
-  background:white;
-  padding:25px;
-  border-radius:22px;
-  box-shadow:0 15px 45px rgba(0,0,0,.08);
+.payment-card{
+    width:100%;
+    max-width:390px;
+    background:#fff;
+    border-radius:22px;
+    padding:26px 20px;
+    box-shadow:0 12px 40px rgba(0,0,0,.08);
 }
 
-h1{
-  text-align:center;
-  color:#16a34a;
-  margin-bottom:25px;
+.brand{
+    text-align:center;
+    font-size:30px;
+    font-weight:900;
+    color:#16a34a;
+}
+
+.sub{
+    text-align:center;
+    margin-top:5px;
+    font-size:12px;
+    color:#777;
+}
+
+.amount-box{
+    margin-top:24px;
+    padding:20px;
+    border-radius:16px;
+    background:#f1fff6;
+    text-align:center;
+}
+
+.amount-label{
+    font-size:12px;
+    color:#777;
 }
 
 .amount{
-  text-align:center;
-  font-size:42px;
-  font-weight:900;
-  margin-bottom:25px;
+    margin-top:5px;
+    font-size:42px;
+    font-weight:900;
+}
+
+.title{
+    margin-top:24px;
+    margin-bottom:10px;
+    font-size:13px;
+    font-weight:800;
 }
 
 .pay-btn{
-  width:100%;
-  height:58px;
-  border:none;
-  border-radius:15px;
-  margin-top:12px;
-  font-size:17px;
-  font-weight:800;
-  cursor:pointer;
+    width:100%;
+    height:58px;
+    border:none;
+    border-radius:14px;
+    margin-top:10px;
+    font-size:16px;
+    font-weight:800;
+    cursor:pointer;
+}
+
+.pay-btn:active{
+    transform:scale(.98);
 }
 
 .phonepe{
-  background:#5f259f;
-  color:white;
+    background:#5f259f;
+    color:#fff;
 }
 
 .paytm{
-  background:#00baf2;
-  color:white;
-}
-
-.loading{
-  display:none;
-  text-align:center;
-  margin-top:22px;
-}
-
-.loading.show{
-  display:block;
-}
-
-.spinner{
-  width:35px;
-  height:35px;
-  margin:auto;
-  border-radius:50%;
-  border:4px solid #ddd;
-  border-top-color:#16a34a;
-  animation:spin .7s linear infinite;
-}
-
-@keyframes spin{
-  to{
-    transform:rotate(360deg);
-  }
+    background:#00baf2;
+    color:#fff;
 }
 
 .status{
-  margin-top:15px;
-  text-align:center;
-  font-size:13px;
+    margin-top:16px;
+    min-height:18px;
+    text-align:center;
+    font-size:12px;
+    color:#666;
+}
+
+.status.error{
+    color:#dc2626;
+}
+
+.status.success{
+    color:#16a34a;
+    font-weight:800;
+}
+
+/* LOADER */
+
+.loader-overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(255,255,255,.96);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    opacity:0;
+    visibility:hidden;
+    pointer-events:none;
+    z-index:999999;
+}
+
+.loader-overlay.show{
+    opacity:1;
+    visibility:visible;
+    pointer-events:auto;
+}
+
+.loader-box{
+    text-align:center;
+}
+
+.spinner{
+    width:44px;
+    height:44px;
+    border:4px solid #e5e5e5;
+    border-top-color:#16a34a;
+    border-radius:50%;
+    margin:auto;
+    animation:spin .7s linear infinite;
+}
+
+@keyframes spin{
+    to{
+        transform:rotate(360deg);
+    }
+}
+
+.loader-text{
+    margin-top:14px;
+    font-size:14px;
+    font-weight:800;
+    color:#222;
+}
+
+.loader-sub{
+    margin-top:5px;
+    font-size:11px;
+    color:#777;
 }
 </style>
 </head>
 
 <body>
 
-<div class="card">
+<div class="payment-card">
 
-  <h1>CEZOO</h1>
+    <div class="brand">CEZOO</div>
 
-  <div class="amount">
-    ₹1
-  </div>
-
-  <button
-    class="pay-btn phonepe"
-    onclick="startPayment('phonepe')">
-    Pay with PhonePe
-  </button>
-
-  <button
-    class="pay-btn paytm"
-    onclick="startPayment('paytm')">
-    Pay with Paytm
-  </button>
-
-  <div id="loading" class="loading">
-    <div class="spinner"></div>
-    <div style="margin-top:10px">
-      Opening UPI payment...
+    <div class="sub">
+        Secure UPI Payment
     </div>
-  </div>
 
-  <div id="status" class="status"></div>
+    <div class="amount-box">
+
+        <div class="amount-label">
+            Amount to Pay
+        </div>
+
+        <div class="amount">
+            ₹1
+        </div>
+
+    </div>
+
+    <div class="title">
+        Choose payment option
+    </div>
+
+    <button
+        class="pay-btn phonepe"
+        onclick="startPayment('phonepe')"
+    >
+        Pay with PhonePe
+    </button>
+
+    <button
+        class="pay-btn paytm"
+        onclick="startPayment('paytm')"
+    >
+        Pay with Paytm
+    </button>
+
+    <div
+        id="status"
+        class="status"
+    ></div>
+
+</div>
+
+
+<!-- LOADER -->
+
+<div
+    id="loader"
+    class="loader-overlay"
+>
+
+    <div class="loader-box">
+
+        <div class="spinner"></div>
+
+        <div
+            id="loaderText"
+            class="loader-text"
+        >
+            Preparing payment...
+        </div>
+
+        <div class="loader-sub">
+            Please wait
+        </div>
+
+    </div>
 
 </div>
 
 
 <script>
 
-/* ==============================
-   YOUR RAZORPAY BACKEND
-============================== */
-
 const BACKEND =
-  "https://YOUR-RAZORPAY-BACKEND.onrender.com";
+    "https://razropay.onrender.com";
+
+const RAZORPAY_KEY =
+    "rzp_live_SqrUSaPO5pA6gt";
 
 
-/* ==============================
-   UI
-============================== */
+let paymentRunning = false;
 
-function showLoader(){
 
-  document
-    .getElementById("loading")
-    .classList
-    .add("show");
+function showLoader(text){
 
+    document.getElementById(
+        "loaderText"
+    ).textContent =
+        text || "Preparing payment...";
+
+    document.getElementById(
+        "loader"
+    ).classList.add(
+        "show"
+    );
 }
+
 
 function hideLoader(){
 
-  document
-    .getElementById("loading")
-    .classList
-    .remove("show");
-
-}
-
-function status(msg){
-
-  document.getElementById("status")
-    .textContent = msg || "";
-
+    document.getElementById(
+        "loader"
+    ).classList.remove(
+        "show"
+    );
 }
 
 
-/* ==============================
-   START PAYMENT
-============================== */
+function showStatus(
+    text,
+    type=""
+){
 
-async function startPayment(app){
+    const box =
+        document.getElementById(
+            "status"
+        );
 
-  showLoader();
+    box.textContent =
+        text || "";
 
-  status(
-    app === "phonepe"
-      ? "Preparing PhonePe payment..."
-      : "Preparing Paytm payment..."
-  );
+    box.className =
+        "status";
 
-  try{
-
-
-    /* CREATE RAZORPAY ORDER */
-
-    const response =
-      await fetch(
-        BACKEND + "/create-order",
-        {
-          method:"POST",
-          headers:{
-            "Content-Type":"application/json"
-          },
-          body:JSON.stringify({
-            amount:1
-          })
-        }
-      );
+    if(type){
+        box.classList.add(type);
+    }
+}
 
 
-    const data =
-      await response.json();
+async function startPayment(
+    selectedApp
+){
+
+    if(paymentRunning){
+        return;
+    }
+
+    paymentRunning = true;
+
+    showStatus("");
 
 
     if(
-      !response.ok ||
-      !data.success
+        selectedApp === "phonepe"
     ){
 
-      throw new Error(
-        data.message ||
-        "Unable to create order"
-      );
+        showLoader(
+            "Preparing PhonePe..."
+        );
+
+    }else{
+
+        showLoader(
+            "Preparing Paytm..."
+        );
 
     }
 
 
-    /* ==============================
-       RAZORPAY OPTIONS
-    ============================== */
-
-    const options = {
-
-      key:data.key_id,
-
-      amount:data.amount,
-
-      currency:"INR",
-
-      name:"CEZOO",
-
-      description:
-        app === "phonepe"
-          ? "PhonePe Payment"
-          : "Paytm Payment",
-
-      order_id:data.order_id,
+    try{
 
 
-      /* ============================
-         UPI ONLY
-      ============================ */
+        /* =========================
+           CREATE RAZORPAY ORDER
+        ========================== */
 
-      config:{
+        const response =
+            await fetch(
 
-        display:{
+                BACKEND +
+                "/create-order",
 
-          blocks:{
-
-            upi:{
-
-              name:"Pay using UPI",
-
-              instruments:[
                 {
-                  method:"upi"
+                    method:"POST",
+
+                    headers:{
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body:
+                        JSON.stringify({
+                            amount:100
+                        })
                 }
-              ]
+
+            );
+
+
+        const data =
+            await response.json();
+
+
+        console.log(
+            "CREATE ORDER:",
+            data
+        );
+
+
+        if(
+            !response.ok ||
+            !data ||
+            !data.success ||
+            !data.order
+        ){
+
+            throw new Error(
+                data?.message ||
+                "Unable to create payment"
+            );
+
+        }
+
+
+        const order =
+            data.order;
+
+
+        showLoader(
+            "Opening UPI..."
+        );
+
+
+        /* =========================
+           RAZORPAY CONFIG
+        ========================== */
+
+        const options = {
+
+            key:
+                RAZORPAY_KEY,
+
+            amount:
+                order.amount,
+
+            currency:
+                order.currency ||
+                "INR",
+
+            order_id:
+                order.id,
+
+            name:
+                "CEZOO",
+
+            description:
+                "UPI Payment",
+
+            webview_intent:
+                true,
+
+
+            /* =====================
+               UPI ONLY
+            ====================== */
+
+            config:{
+
+                display:{
+
+                    blocks:{
+
+                        upi:{
+
+                            name:
+                                "Pay using UPI",
+
+                            instruments:[
+                                {
+                                    method:"upi"
+                                }
+                            ]
+
+                        }
+
+                    },
+
+                    sequence:[
+                        "block.upi"
+                    ],
+
+                    preferences:{
+                        show_default_blocks:
+                            false
+                    }
+
+                }
+
+            },
+
+
+            theme:{
+                color:"#16a34a"
+            },
+
+
+            /* =====================
+               SUCCESS
+            ====================== */
+
+            handler:
+                function(
+                    paymentResponse
+                ){
+
+                    hideLoader();
+
+                    paymentRunning =
+                        false;
+
+
+                    console.log(
+                        "PAYMENT SUCCESS:",
+                        paymentResponse
+                    );
+
+
+                    showStatus(
+                        "Payment successful ✅",
+                        "success"
+                    );
+
+
+                    /*
+                    Production lo ikkada
+                    backend verify call cheyyali.
+
+                    paymentResponse fields:
+
+                    paymentResponse.razorpay_order_id
+
+                    paymentResponse.razorpay_payment_id
+
+                    paymentResponse.razorpay_signature
+                    */
+
+                },
+
+
+            modal:{
+
+                ondismiss:
+                    function(){
+
+                        hideLoader();
+
+                        paymentRunning =
+                            false;
+
+                        showStatus(
+                            "Payment cancelled"
+                        );
+
+                    }
 
             }
 
-          },
-
-          sequence:[
-            "block.upi"
-          ],
-
-          preferences:{
-            show_default_blocks:false
-          }
-
-        }
-
-      },
+        };
 
 
-      /* ============================
-         PAYMENT SUCCESS
-      ============================ */
+        const razorpay =
+            new Razorpay(
+                options
+            );
 
-      handler:async function(response){
 
-        status(
-          "Verifying payment..."
+        razorpay.on(
+
+            "payment.failed",
+
+            function(response){
+
+                hideLoader();
+
+                paymentRunning =
+                    false;
+
+
+                console.error(
+                    response
+                );
+
+
+                showStatus(
+
+                    response?.error
+                        ?.description ||
+
+                    "Payment failed",
+
+                    "error"
+
+                );
+
+            }
+
         );
 
 
-        try{
+        /* =========================
+           OPEN CHECKOUT
+        ========================== */
 
-          const verify =
-            await fetch(
-              BACKEND + "/verify-payment",
-              {
-                method:"POST",
+        setTimeout(
+            function(){
 
-                headers:{
-                  "Content-Type":
-                    "application/json"
-                },
+                razorpay.open();
 
-                body:JSON.stringify({
+                setTimeout(
+                    hideLoader,
+                    300
+                );
 
-                  razorpay_order_id:
-                    response.razorpay_order_id,
-
-                  razorpay_payment_id:
-                    response.razorpay_payment_id,
-
-                  razorpay_signature:
-                    response.razorpay_signature
-
-                })
-
-              }
-            );
-
-
-          const verifyData =
-            await verify.json();
-
-
-          hideLoader();
-
-
-          if(
-            verify.ok &&
-            verifyData.success
-          ){
-
-            status(
-              "Payment successful ✅"
-            );
-
-          }
-          else{
-
-            status(
-              "Payment verification failed"
-            );
-
-          }
-
-        }
-        catch(error){
-
-          hideLoader();
-
-          status(
-            "Unable to verify payment"
-          );
-
-        }
-
-      },
-
-
-      modal:{
-
-        ondismiss:function(){
-
-          hideLoader();
-
-          status(
-            "Payment cancelled"
-          );
-
-        }
-
-      },
-
-
-      theme:{
-        color:"#16a34a"
-      }
-
-    };
-
-
-    /* ==============================
-       OPEN RAZORPAY
-    ============================== */
-
-    const razorpay =
-      new Razorpay(options);
-
-
-    razorpay.on(
-      "payment.failed",
-      function(response){
-
-        hideLoader();
-
-        status(
-          response.error.description ||
-          "Payment failed"
+            },
+            500
         );
 
-      }
-    );
 
+    }
+    catch(error){
 
-    /*
-       Spinner stays visible until
-       Razorpay opens.
-    */
-
-    setTimeout(
-      function(){
-
-        razorpay.open();
+        console.error(
+            error
+        );
 
         hideLoader();
 
-      },
-      500
-    );
+        paymentRunning =
+            false;
 
 
-  }
-  catch(error){
+        showStatus(
 
-    console.error(error);
+            error.message ||
+            "Unable to start payment",
 
-    hideLoader();
+            "error"
 
-    status(
-      error.message ||
-      "Unable to start payment"
-    );
+        );
 
-  }
+    }
 
 }
 
