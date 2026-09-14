@@ -199,16 +199,6 @@ input{
   font-size:12px;
   color:#888;
 }
-
-@media(max-width:420px){
-  body{
-    padding:12px;
-  }
-
-  .payment-card{
-    padding:24px 18px;
-  }
-}
 </style>
 </head>
 
@@ -254,7 +244,6 @@ input{
         type="tel"
         inputmode="numeric"
         maxlength="10"
-        autocomplete="tel"
         placeholder="Enter 10 digit number"
       >
 
@@ -288,23 +277,15 @@ input{
 <script>
 
 /* =========================================
-   BACKEND
+   NEW BACKEND URL
 ========================================= */
 
 const BACKEND =
-  "https://cashfreebackend-sxcz.onrender.com";
+  "https://cashfreebackend-6dv5.onrender.com";
 
 
 /* =========================================
-   CASHFREE
-
-   IMPORTANT:
-
-   Backend sandbox:
-   mode:"sandbox"
-
-   Backend production:
-   mode:"production"
+   CASHFREE SANDBOX
 ========================================= */
 
 const cashfree =
@@ -331,7 +312,7 @@ const loaderWrap =
 
 
 /* =========================================
-   MOBILE ONLY NUMBERS
+   MOBILE NUMBERS ONLY
 ========================================= */
 
 mobileInput.addEventListener(
@@ -367,12 +348,9 @@ function loading(show){
 
   if(show){
 
-    loaderWrap.classList.add(
-      "show"
-    );
+    loaderWrap.classList.add("show");
 
-    payBtn.disabled =
-      true;
+    payBtn.disabled = true;
 
     payBtn.textContent =
       "Please wait...";
@@ -380,12 +358,9 @@ function loading(show){
   }
   else{
 
-    loaderWrap.classList.remove(
-      "show"
-    );
+    loaderWrap.classList.remove("show");
 
-    payBtn.disabled =
-      false;
+    payBtn.disabled = false;
 
     payBtn.textContent =
       "Pay ₹1";
@@ -396,12 +371,11 @@ function loading(show){
 
 
 /* =========================================
-   CREATE ORDER + OPEN CASHFREE
+   PAY
 ========================================= */
 
 payBtn.addEventListener(
   "click",
-
   async function(){
 
     const mobile =
@@ -410,8 +384,6 @@ payBtn.addEventListener(
       .replace(/\D/g,"")
       .trim();
 
-
-    /* MOBILE CHECK */
 
     if(
       !/^[6-9]\d{9}$/.test(mobile)
@@ -431,44 +403,39 @@ payBtn.addEventListener(
     loading(true);
 
     setStatus(
-      "Creating payment..."
+      "Creating Cashfree order..."
     );
 
 
     try{
 
 
-      /* ==================================
-         CALL BACKEND
-      ================================== */
+      /* =====================================
+         CREATE ORDER
+      ===================================== */
 
       const response =
         await fetch(
 
-          BACKEND +
-          "/create-order",
+          BACKEND + "/create-order",
 
           {
 
             method:"POST",
 
             headers:{
-              "Content-Type":
-                "application/json"
+              "Content-Type":"application/json"
             },
 
-            body:
-              JSON.stringify({
+            body:JSON.stringify({
 
-                amount:1,
+              amount:1,
 
-                mobile:
-                  mobile,
+              mobile:mobile,
 
-                customer_phone:
-                  mobile
+              customer_phone:mobile
 
-              })
+            })
 
           }
 
@@ -477,17 +444,16 @@ payBtn.addEventListener(
 
       let data;
 
-
       try{
 
         data =
           await response.json();
 
       }
-      catch(error){
+      catch(e){
 
         throw new Error(
-          "Invalid response from server"
+          "Invalid server response"
         );
 
       }
@@ -499,44 +465,27 @@ payBtn.addEventListener(
       );
 
 
-      /* ==================================
-         BACKEND ERROR
-      ================================== */
-
       if(
         !response.ok ||
         !data.success
       ){
 
         throw new Error(
-
           data.message ||
-
-          "Unable to create payment"
-
+          "Unable to create order"
         );
 
       }
 
 
-      /* ==================================
-         GET SESSION ID
-      ================================== */
-
       const paymentSessionId =
-
-        data.payment_session_id ||
-
-        data.order
-          ?.payment_session_id;
+        data.payment_session_id;
 
 
-      if(
-        !paymentSessionId
-      ){
+      if(!paymentSessionId){
 
         throw new Error(
-          "Payment session ID not received"
+          "payment_session_id missing"
         );
 
       }
@@ -555,13 +504,13 @@ payBtn.addEventListener(
 
 
       setStatus(
-        "Opening Cashfree payment..."
+        "Opening Cashfree..."
       );
 
 
-      /* ==================================
-         CASHFREE CHECKOUT
-      ================================== */
+      /* =====================================
+         OPEN CASHFREE
+      ===================================== */
 
       const result =
         await cashfree.checkout({
@@ -576,27 +525,18 @@ payBtn.addEventListener(
 
 
       console.log(
-        "CASHFREE RESULT:",
+        "CASHFREE CHECKOUT RESULT:",
         result
       );
 
-
-      /*
-        Normally _self redirects away.
-
-        If SDK returns an error without redirect:
-      */
 
       if(
         result?.error
       ){
 
         throw new Error(
-
           result.error.message ||
-
-          "Unable to open payment"
-
+          "Cashfree checkout error"
         );
 
       }
@@ -610,7 +550,9 @@ payBtn.addEventListener(
         error
       );
 
+
       loading(false);
+
 
       setStatus(
         error.message ||
