@@ -2,659 +2,215 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
 
-<meta
-  name="viewport"
-  content="width=device-width, initial-scale=1.0"
->
+<title>CEZOO UPI Pay</title>
 
-<title>CEZOO Payment</title>
-
-<script src="https://sdk.cashfree.com/js/v3/cashfree.js"></script>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
 <style>
-
 *{
+  box-sizing:border-box;
   margin:0;
   padding:0;
-  box-sizing:border-box;
-}
-
-html,
-body{
-  width:100%;
-  min-height:100%;
 }
 
 body{
   min-height:100vh;
-
   display:flex;
   align-items:center;
   justify-content:center;
-
-  padding:18px;
-
-  background:#f4f8f5;
-
-  font-family:
-    Arial,
-    Helvetica,
-    sans-serif;
+  background:#f5f7f5;
+  font-family:Arial,sans-serif;
 }
 
-
-/* ===========================
-   CARD
-=========================== */
-
-.payment-card{
-  width:100%;
+.card{
+  width:92%;
   max-width:390px;
-
-  background:#ffffff;
-
-  border-radius:24px;
-
-  padding:
-    28px
-    22px
-    24px;
-
-  box-shadow:
-    0 18px 50px
-    rgba(0,0,0,.08);
+  background:white;
+  padding:25px;
+  border-radius:22px;
+  box-shadow:0 15px 45px rgba(0,0,0,.08);
 }
 
-
-/* ===========================
-   BRAND
-=========================== */
-
-.brand{
+h1{
   text-align:center;
-}
-
-.brand-name{
-  font-size:30px;
-  font-weight:900;
-
   color:#16a34a;
-
-  letter-spacing:1px;
-}
-
-.subtitle{
-  margin-top:5px;
-
-  font-size:14px;
-
-  color:#777;
-}
-
-
-/* ===========================
-   AMOUNT
-=========================== */
-
-.amount-box{
-  margin-top:26px;
-
-  text-align:center;
-
-  padding:22px;
-
-  border-radius:18px;
-
-  background:#f4fff7;
-
-  border:
-    1px solid
-    #dcfce7;
-}
-
-.amount-label{
-  font-size:13px;
-
-  color:#6b7280;
+  margin-bottom:25px;
 }
 
 .amount{
-  margin-top:5px;
-
-  font-size:46px;
+  text-align:center;
+  font-size:42px;
   font-weight:900;
-
-  color:#111;
+  margin-bottom:25px;
 }
-
-.live-badge{
-  display:inline-block;
-
-  margin-top:10px;
-
-  padding:
-    5px
-    10px;
-
-  border-radius:50px;
-
-  background:#dcfce7;
-
-  color:#15803d;
-
-  font-size:11px;
-  font-weight:700;
-}
-
-
-/* ===========================
-   FORM
-=========================== */
-
-.form{
-  margin-top:24px;
-}
-
-label{
-  display:block;
-
-  margin-bottom:8px;
-
-  font-size:13px;
-  font-weight:700;
-
-  color:#333;
-}
-
-.mobile-box{
-  display:flex;
-  align-items:center;
-
-  height:56px;
-
-  border:
-    1.5px solid
-    #ddd;
-
-  border-radius:14px;
-
-  overflow:hidden;
-
-  transition:.2s;
-}
-
-.mobile-box:focus-within{
-  border-color:#16a34a;
-
-  box-shadow:
-    0 0 0 4px
-    rgba(22,163,74,.08);
-}
-
-.country{
-  height:100%;
-
-  display:flex;
-  align-items:center;
-
-  padding:
-    0
-    13px;
-
-  border-right:
-    1px solid
-    #eee;
-
-  font-weight:700;
-}
-
-input{
-  flex:1;
-
-  width:100%;
-
-  height:100%;
-
-  border:none;
-
-  outline:none;
-
-  padding:
-    0
-    14px;
-
-  font-size:16px;
-}
-
-
-/* ===========================
-   BUTTON
-=========================== */
 
 .pay-btn{
   width:100%;
-  height:56px;
-
-  margin-top:18px;
-
+  height:58px;
   border:none;
-
-  border-radius:14px;
-
-  background:#16a34a;
-
-  color:#fff;
-
-  font-size:16px;
+  border-radius:15px;
+  margin-top:12px;
+  font-size:17px;
   font-weight:800;
-
   cursor:pointer;
-
-  transition:.15s;
 }
 
-.pay-btn:active{
-  transform:scale(.98);
+.phonepe{
+  background:#5f259f;
+  color:white;
 }
 
-.pay-btn:disabled{
-  opacity:.55;
-
-  cursor:not-allowed;
+.paytm{
+  background:#00baf2;
+  color:white;
 }
 
-
-/* ===========================
-   LOADER
-=========================== */
-
-.loader-wrap{
+.loading{
   display:none;
-
-  margin-top:18px;
-
   text-align:center;
+  margin-top:22px;
 }
 
-.loader-wrap.show{
+.loading.show{
   display:block;
 }
 
 .spinner{
-  width:30px;
-  height:30px;
-
+  width:35px;
+  height:35px;
   margin:auto;
-
   border-radius:50%;
-
-  border:
-    3px solid
-    #e5e7eb;
-
-  border-top-color:
-    #16a34a;
-
-  animation:
-    spin
-    .7s
-    linear
-    infinite;
+  border:4px solid #ddd;
+  border-top-color:#16a34a;
+  animation:spin .7s linear infinite;
 }
 
 @keyframes spin{
-
   to{
     transform:rotate(360deg);
   }
-
 }
 
-
-/* ===========================
-   STATUS
-=========================== */
-
-#status{
-  margin-top:14px;
-
-  min-height:22px;
-
+.status{
+  margin-top:15px;
   text-align:center;
-
   font-size:13px;
-
-  line-height:1.5;
-
-  color:#666;
 }
-
-#status.success{
-  color:#15803d;
-
-  font-weight:700;
-}
-
-#status.error{
-  color:#dc2626;
-
-  font-weight:700;
-}
-
-#status.pending{
-  color:#b45309;
-
-  font-weight:700;
-}
-
-
-/* ===========================
-   SECURE
-=========================== */
-
-.secure{
-  margin-top:22px;
-
-  padding-top:17px;
-
-  border-top:
-    1px solid
-    #eee;
-
-  text-align:center;
-
-  font-size:12px;
-
-  color:#888;
-}
-
 </style>
 </head>
 
-
 <body>
 
+<div class="card">
 
-<div class="payment-card">
+  <h1>CEZOO</h1>
 
-
-  <div class="brand">
-
-    <div class="brand-name">
-      CEZOO
-    </div>
-
-    <div class="subtitle">
-      Secure UPI Payment
-    </div>
-
+  <div class="amount">
+    ₹1
   </div>
 
+  <button
+    class="pay-btn phonepe"
+    onclick="startPayment('phonepe')">
+    Pay with PhonePe
+  </button>
 
-  <div class="amount-box">
+  <button
+    class="pay-btn paytm"
+    onclick="startPayment('paytm')">
+    Pay with Paytm
+  </button>
 
-    <div class="amount-label">
-      Amount to Pay
-    </div>
-
-    <div class="amount">
-      ₹1
-    </div>
-
-    <div class="live-badge">
-      LIVE PAYMENT
-    </div>
-
-  </div>
-
-
-  <div class="form">
-
-    <label for="mobile">
-      Mobile Number
-    </label>
-
-
-    <div class="mobile-box">
-
-      <div class="country">
-        +91
-      </div>
-
-
-      <input
-        id="mobile"
-        type="tel"
-        inputmode="numeric"
-        maxlength="10"
-        autocomplete="tel"
-        placeholder="Enter 10 digit number"
-      >
-
-    </div>
-
-
-    <button
-      id="payBtn"
-      class="pay-btn"
-      type="button"
-    >
-      Pay ₹1
-    </button>
-
-  </div>
-
-
-  <div
-    id="loaderWrap"
-    class="loader-wrap"
-  >
-
+  <div id="loading" class="loading">
     <div class="spinner"></div>
-
+    <div style="margin-top:10px">
+      Opening UPI payment...
+    </div>
   </div>
 
-
-  <div id="status"></div>
-
-
-  <div class="secure">
-    Secure payment powered by Cashfree
-  </div>
-
+  <div id="status" class="status"></div>
 
 </div>
 
 
 <script>
 
-/* =====================================================
-   CONFIG
-===================================================== */
+/* ==============================
+   YOUR RAZORPAY BACKEND
+============================== */
 
 const BACKEND =
-  "https://cashfreebackend-l9r0.onrender.com";
+  "https://YOUR-RAZORPAY-BACKEND.onrender.com";
 
 
-const cashfree =
-  Cashfree({
-    mode:"production"
-  });
+/* ==============================
+   UI
+============================== */
 
+function showLoader(){
 
-/* =====================================================
-   ELEMENTS
-===================================================== */
+  document
+    .getElementById("loading")
+    .classList
+    .add("show");
 
-const mobileInput =
-  document.getElementById(
-    "mobile"
-  );
+}
 
-const payBtn =
-  document.getElementById(
-    "payBtn"
-  );
+function hideLoader(){
 
-const statusBox =
-  document.getElementById(
-    "status"
-  );
+  document
+    .getElementById("loading")
+    .classList
+    .remove("show");
 
-const loaderWrap =
-  document.getElementById(
-    "loaderWrap"
-  );
+}
 
+function status(msg){
 
-/* =====================================================
-   MOBILE CLEANUP
-===================================================== */
-
-mobileInput.addEventListener(
-  "input",
-
-  function(){
-
-    this.value =
-      this.value
-        .replace(
-          /\D/g,
-          ""
-        )
-        .slice(
-          0,
-          10
-        );
-
-  }
-);
-
-
-/* =====================================================
-   STATUS
-===================================================== */
-
-function setStatus(
-  message,
-  type = ""
-){
-
-  statusBox.textContent =
-    message || "";
-
-  statusBox.className =
-    "";
-
-  if(type){
-
-    statusBox.classList.add(
-      type
-    );
-
-  }
+  document.getElementById("status")
+    .textContent = msg || "";
 
 }
 
 
-/* =====================================================
-   LOADING
-===================================================== */
+/* ==============================
+   START PAYMENT
+============================== */
 
-function setLoading(
-  show,
-  text = "Please wait..."
-){
+async function startPayment(app){
 
-  if(show){
+  showLoader();
 
-    loaderWrap
-      .classList
-      .add(
-        "show"
-      );
-
-    payBtn.disabled =
-      true;
-
-    payBtn.textContent =
-      text;
-
-  }
-  else{
-
-    loaderWrap
-      .classList
-      .remove(
-        "show"
-      );
-
-    payBtn.disabled =
-      false;
-
-    payBtn.textContent =
-      "Pay ₹1";
-
-  }
-
-}
-
-
-/* =====================================================
-   VERIFY PAYMENT
-===================================================== */
-
-async function verifyPayment(
-  orderId
-){
-
-  if(!orderId){
-
-    return;
-
-  }
-
-
-  setLoading(
-    true,
-    "Checking payment..."
+  status(
+    app === "phonepe"
+      ? "Preparing PhonePe payment..."
+      : "Preparing Paytm payment..."
   );
-
-
-  setStatus(
-    "Verifying payment..."
-  );
-
 
   try{
 
 
+    /* CREATE RAZORPAY ORDER */
+
     const response =
       await fetch(
-
-        BACKEND +
-        "/verify-payment/" +
-        encodeURIComponent(
-          orderId
-        ),
-
+        BACKEND + "/create-order",
         {
-          method:"GET",
-          cache:"no-store"
+          method:"POST",
+          headers:{
+            "Content-Type":"application/json"
+          },
+          body:JSON.stringify({
+            amount:1
+          })
         }
-
       );
 
 
     const data =
       await response.json();
-
-
-    console.log(
-      "VERIFY RESPONSE:",
-      data
-    );
 
 
     if(
@@ -664,466 +220,230 @@ async function verifyPayment(
 
       throw new Error(
         data.message ||
-        "Unable to verify payment"
+        "Unable to create order"
       );
 
     }
 
 
-    /* =========================
-       PAID
-    ========================= */
+    /* ==============================
+       RAZORPAY OPTIONS
+    ============================== */
 
-    if(
-      data.paid === true
-    ){
+    const options = {
 
-      localStorage.removeItem(
-        "cezoo_cashfree_order_id"
-      );
+      key:data.key_id,
 
+      amount:data.amount,
 
-      setLoading(
-        false
-      );
+      currency:"INR",
 
+      name:"CEZOO",
 
-      setStatus(
-        "Payment successful ✅ ₹1 received",
-        "success"
-      );
+      description:
+        app === "phonepe"
+          ? "PhonePe Payment"
+          : "Paytm Payment",
+
+      order_id:data.order_id,
 
 
-      return;
+      /* ============================
+         UPI ONLY
+      ============================ */
 
-    }
+      config:{
+
+        display:{
+
+          blocks:{
+
+            upi:{
+
+              name:"Pay using UPI",
+
+              instruments:[
+                {
+                  method:"upi"
+                }
+              ]
+
+            }
+
+          },
+
+          sequence:[
+            "block.upi"
+          ],
+
+          preferences:{
+            show_default_blocks:false
+          }
+
+        }
+
+      },
 
 
-    /* =========================
-       PENDING
-    ========================= */
+      /* ============================
+         PAYMENT SUCCESS
+      ============================ */
 
-    if(
-      data.processing === true
-    ){
+      handler:async function(response){
 
-      setLoading(
-        false
-      );
+        status(
+          "Verifying payment..."
+        );
 
 
-      setStatus(
-        "Payment is still processing. Please wait.",
-        "pending"
-      );
+        try{
+
+          const verify =
+            await fetch(
+              BACKEND + "/verify-payment",
+              {
+                method:"POST",
+
+                headers:{
+                  "Content-Type":
+                    "application/json"
+                },
+
+                body:JSON.stringify({
+
+                  razorpay_order_id:
+                    response.razorpay_order_id,
+
+                  razorpay_payment_id:
+                    response.razorpay_payment_id,
+
+                  razorpay_signature:
+                    response.razorpay_signature
+
+                })
+
+              }
+            );
 
 
-      return;
+          const verifyData =
+            await verify.json();
 
-    }
+
+          hideLoader();
 
 
-    /* =========================
-       NOT PAID
-    ========================= */
+          if(
+            verify.ok &&
+            verifyData.success
+          ){
 
-    setLoading(
-      false
+            status(
+              "Payment successful ✅"
+            );
+
+          }
+          else{
+
+            status(
+              "Payment verification failed"
+            );
+
+          }
+
+        }
+        catch(error){
+
+          hideLoader();
+
+          status(
+            "Unable to verify payment"
+          );
+
+        }
+
+      },
+
+
+      modal:{
+
+        ondismiss:function(){
+
+          hideLoader();
+
+          status(
+            "Payment cancelled"
+          );
+
+        }
+
+      },
+
+
+      theme:{
+        color:"#16a34a"
+      }
+
+    };
+
+
+    /* ==============================
+       OPEN RAZORPAY
+    ============================== */
+
+    const razorpay =
+      new Razorpay(options);
+
+
+    razorpay.on(
+      "payment.failed",
+      function(response){
+
+        hideLoader();
+
+        status(
+          response.error.description ||
+          "Payment failed"
+        );
+
+      }
     );
 
 
-    setStatus(
-      data.message ||
-      "Payment not completed",
-      "error"
+    /*
+       Spinner stays visible until
+       Razorpay opens.
+    */
+
+    setTimeout(
+      function(){
+
+        razorpay.open();
+
+        hideLoader();
+
+      },
+      500
     );
 
 
   }
   catch(error){
 
+    console.error(error);
 
-    console.error(
-      "VERIFY ERROR:",
-      error
-    );
+    hideLoader();
 
-
-    setLoading(
-      false
-    );
-
-
-    setStatus(
+    status(
       error.message ||
-      "Unable to verify payment",
-      "error"
+      "Unable to start payment"
     );
 
   }
 
 }
 
-
-/* =====================================================
-   CREATE PAYMENT
-===================================================== */
-
-payBtn.addEventListener(
-  "click",
-
-  async function(){
-
-
-    const mobile =
-      mobileInput
-        .value
-        .replace(
-          /\D/g,
-          ""
-        )
-        .trim();
-
-
-    /* =========================
-       VALIDATE MOBILE
-    ========================= */
-
-    if(
-      !/^[6-9]\d{9}$/
-        .test(
-          mobile
-        )
-    ){
-
-      setStatus(
-        "Please enter a valid 10 digit mobile number",
-        "error"
-      );
-
-
-      mobileInput.focus();
-
-
-      return;
-
-    }
-
-
-    setLoading(
-      true,
-      "Creating order..."
-    );
-
-
-    setStatus(
-      "Creating secure payment order..."
-    );
-
-
-    try{
-
-
-      /* =========================
-         CREATE ORDER
-      ========================= */
-
-      const response =
-        await fetch(
-
-          BACKEND +
-          "/create-order",
-
-          {
-
-            method:"POST",
-
-            headers:{
-
-              "Content-Type":
-                "application/json"
-
-            },
-
-            body:
-              JSON.stringify({
-
-                amount:
-                  1,
-
-                mobile:
-                  mobile,
-
-                customer_phone:
-                  mobile
-
-              })
-
-          }
-
-        );
-
-
-      let data;
-
-
-      try{
-
-        data =
-          await response.json();
-
-      }
-      catch(error){
-
-        throw new Error(
-          "Invalid response from payment server"
-        );
-
-      }
-
-
-      console.log(
-        "CREATE ORDER RESPONSE:",
-        data
-      );
-
-
-      if(
-        !response.ok ||
-        !data.success
-      ){
-
-        throw new Error(
-          data.message ||
-          "Unable to create payment order"
-        );
-
-      }
-
-
-      /* =========================
-         CHECK PRODUCTION MODE
-      ========================= */
-
-      if(
-        data.mode &&
-        data.mode !==
-        "production"
-      ){
-
-        throw new Error(
-          "Payment server is not in production mode"
-        );
-
-      }
-
-
-      const orderId =
-        data.order_id;
-
-
-      const paymentSessionId =
-        data.payment_session_id;
-
-
-      if(
-        !orderId
-      ){
-
-        throw new Error(
-          "Order ID not received"
-        );
-
-      }
-
-
-      if(
-        !paymentSessionId
-      ){
-
-        throw new Error(
-          "Payment session ID not received"
-        );
-
-      }
-
-
-      /* =========================
-         SAVE ORDER
-      ========================= */
-
-      localStorage.setItem(
-        "cezoo_cashfree_order_id",
-        orderId
-      );
-
-
-      console.log(
-        "ORDER ID:",
-        orderId
-      );
-
-
-      console.log(
-        "MODE:",
-        data.mode
-      );
-
-
-      setStatus(
-        "Opening secure Cashfree payment..."
-      );
-
-
-      setLoading(
-        true,
-        "Opening payment..."
-      );
-
-
-      /* =========================
-         CASHFREE CHECKOUT
-      ========================= */
-
-      const result =
-        await cashfree.checkout({
-
-          paymentSessionId:
-            paymentSessionId,
-
-          redirectTarget:
-            "_self"
-
-        });
-
-
-      console.log(
-        "CASHFREE CHECKOUT RESULT:",
-        result
-      );
-
-
-      if(
-        result?.error
-      ){
-
-        throw new Error(
-
-          result
-            .error
-            .message ||
-
-          "Unable to open Cashfree payment"
-
-        );
-
-      }
-
-
-    }
-    catch(error){
-
-
-      console.error(
-        "PAYMENT ERROR:",
-        error
-      );
-
-
-      setLoading(
-        false
-      );
-
-
-      setStatus(
-        error.message ||
-        "Unable to start payment",
-        "error"
-      );
-
-    }
-
-  }
-);
-
-
-/* =====================================================
-   CHECK OLD ORDER WHEN PAGE LOADS AGAIN
-
-   Cashfree / UPI app nunchi user
-   browser ki return ayyaka pending order
-   unte server-side status verify chestundi.
-===================================================== */
-
-window.addEventListener(
-  "load",
-
-  async function(){
-
-
-    const oldOrderId =
-      localStorage.getItem(
-        "cezoo_cashfree_order_id"
-      );
-
-
-    if(
-      oldOrderId
-    ){
-
-      console.log(
-        "Previous Cashfree order:",
-        oldOrderId
-      );
-
-
-      await verifyPayment(
-        oldOrderId
-      );
-
-    }
-
-  }
-);
-
-
-/* =====================================================
-   ALSO VERIFY WHEN USER RETURNS TO PAGE
-===================================================== */
-
-document.addEventListener(
-  "visibilitychange",
-
-  function(){
-
-    if(
-      document.visibilityState ===
-      "visible"
-    ){
-
-      const orderId =
-        localStorage.getItem(
-          "cezoo_cashfree_order_id"
-        );
-
-
-      if(
-        orderId
-      ){
-
-        verifyPayment(
-          orderId
-        );
-
-      }
-
-    }
-
-  }
-);
-
 </script>
-
 
 </body>
 </html>
