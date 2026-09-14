@@ -4,15 +4,22 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>CEZOO Cashfree ₹1 Test</title>
+<title>CEZOO Payment</title>
 
 <script src="https://sdk.cashfree.com/js/v3/cashfree.js"></script>
 
 <style>
+
 *{
-  box-sizing:border-box;
   margin:0;
   padding:0;
+  box-sizing:border-box;
+}
+
+html,
+body{
+  width:100%;
+  min-height:100%;
 }
 
 body{
@@ -20,125 +27,574 @@ body{
   display:flex;
   align-items:center;
   justify-content:center;
-  background:#f6f7f8;
-  font-family:Arial,Helvetica,sans-serif;
+  padding:20px;
+
+  background:
+    linear-gradient(
+      180deg,
+      #f0fff5 0%,
+      #ffffff 55%,
+      #f8faf9 100%
+    );
+
+  font-family:
+    Inter,
+    Arial,
+    Helvetica,
+    sans-serif;
 }
 
-.card{
-  width:92%;
+
+/* ================================
+   PAYMENT CARD
+================================ */
+
+.payment-card{
+
+  width:100%;
   max-width:390px;
-  background:#fff;
-  padding:26px 22px;
+
+  background:#ffffff;
+
+  border-radius:26px;
+
+  padding:28px 22px 24px;
+
+  border:1px solid #edf1ee;
+
+  box-shadow:
+    0 20px 50px rgba(0,0,0,.08);
+
+}
+
+
+/* ================================
+   BRAND
+================================ */
+
+.brand{
+
+  text-align:center;
+
+  margin-bottom:8px;
+
+}
+
+.brand-name{
+
+  font-size:29px;
+
+  font-weight:900;
+
+  color:#16a34a;
+
+  letter-spacing:1px;
+
+}
+
+.payment-title{
+
+  text-align:center;
+
+  margin-top:5px;
+
+  font-size:15px;
+
+  color:#6b7280;
+
+}
+
+
+/* ================================
+   AMOUNT BOX
+================================ */
+
+.amount-box{
+
+  margin-top:28px;
+
+  padding:22px;
+
+  text-align:center;
+
+  background:#f7fff9;
+
+  border:1px solid #dcfce7;
+
   border-radius:20px;
-  box-shadow:0 12px 35px rgba(0,0,0,.08);
+
 }
 
-h2{
+.amount-label{
+
+  font-size:13px;
+
+  color:#6b7280;
+
   margin-bottom:6px;
-}
 
-.sub{
-  font-size:14px;
-  color:#777;
-  margin-bottom:22px;
 }
 
 .amount{
-  text-align:center;
-  font-size:42px;
-  font-weight:800;
-  margin-bottom:24px;
+
+  font-size:46px;
+
+  font-weight:900;
+
+  color:#111827;
+
+  line-height:1;
+
+}
+
+.test-label{
+
+  display:inline-flex;
+
+  margin-top:10px;
+
+  padding:5px 10px;
+
+  border-radius:20px;
+
+  background:#dcfce7;
+
+  color:#15803d;
+
+  font-size:11px;
+
+  font-weight:700;
+
+}
+
+
+/* ================================
+   INPUT
+================================ */
+
+.form-section{
+
+  margin-top:25px;
+
+}
+
+.input-label{
+
+  display:block;
+
+  margin-bottom:8px;
+
+  font-size:13px;
+
+  font-weight:700;
+
+  color:#374151;
+
+}
+
+.mobile-wrap{
+
+  height:56px;
+
+  display:flex;
+
+  align-items:center;
+
+  border:1.5px solid #e5e7eb;
+
+  border-radius:15px;
+
+  background:#fff;
+
+  overflow:hidden;
+
+  transition:.2s ease;
+
+}
+
+.mobile-wrap:focus-within{
+
+  border-color:#16a34a;
+
+  box-shadow:
+    0 0 0 4px rgba(22,163,74,.08);
+
+}
+
+.country-code{
+
+  height:100%;
+
+  display:flex;
+
+  align-items:center;
+
+  padding:0 13px;
+
+  border-right:1px solid #eeeeee;
+
+  color:#111827;
+
+  font-size:15px;
+
+  font-weight:700;
+
 }
 
 input{
-  width:100%;
-  height:52px;
-  padding:0 14px;
-  border:1px solid #ddd;
-  border-radius:12px;
-  font-size:16px;
-  outline:none;
-  margin-bottom:14px;
-}
 
-button{
-  width:100%;
-  height:54px;
+  flex:1;
+
+  height:100%;
+
   border:0;
-  border-radius:12px;
-  background:#16a34a;
-  color:white;
-  font-size:17px;
-  font-weight:700;
-  cursor:pointer;
+
+  outline:0;
+
+  padding:0 14px;
+
+  font-size:16px;
+
+  color:#111827;
+
+  background:transparent;
+
 }
 
-button:disabled{
-  opacity:.6;
+input::placeholder{
+
+  color:#a3a3a3;
+
+}
+
+
+/* ================================
+   PAY BUTTON
+================================ */
+
+.pay-btn{
+
+  position:relative;
+
+  width:100%;
+
+  height:57px;
+
+  margin-top:18px;
+
+  border:0;
+
+  border-radius:15px;
+
+  background:#16a34a;
+
+  color:#ffffff;
+
+  font-size:16px;
+
+  font-weight:800;
+
+  cursor:pointer;
+
+  box-shadow:
+    0 9px 22px rgba(22,163,74,.20);
+
+  transition:
+    transform .15s ease,
+    opacity .15s ease;
+
+}
+
+.pay-btn:active{
+
+  transform:scale(.98);
+
+}
+
+.pay-btn:disabled{
+
+  opacity:.65;
+
+  cursor:not-allowed;
+
+}
+
+
+/* ================================
+   LOADING
+================================ */
+
+.loading-area{
+
+  display:none;
+
+  flex-direction:column;
+
+  align-items:center;
+
+  justify-content:center;
+
+  margin-top:20px;
+
+}
+
+.loading-area.show{
+
+  display:flex;
+
 }
 
 .spinner{
-  width:28px;
-  height:28px;
-  margin:16px auto 0;
-  border:3px solid #ddd;
-  border-top-color:#16a34a;
+
+  width:31px;
+
+  height:31px;
+
   border-radius:50%;
-  animation:spin .7s linear infinite;
-  display:none;
+
+  border:3px solid #e5e7eb;
+
+  border-top-color:#16a34a;
+
+  animation:spin .65s linear infinite;
+
 }
 
 @keyframes spin{
+
   to{
     transform:rotate(360deg);
   }
+
 }
 
 #status{
-  margin-top:14px;
+
+  min-height:20px;
+
+  margin-top:12px;
+
   text-align:center;
-  font-size:14px;
+
+  color:#6b7280;
+
+  font-size:13px;
+
+  line-height:1.5;
+
 }
+
+
+/* ================================
+   SECURE SECTION
+================================ */
+
+.secure{
+
+  margin-top:24px;
+
+  padding-top:18px;
+
+  border-top:1px solid #f0f0f0;
+
+  display:flex;
+
+  justify-content:center;
+
+  align-items:center;
+
+  gap:7px;
+
+  color:#9ca3af;
+
+  font-size:12px;
+
+}
+
+.lock{
+
+  width:18px;
+
+  height:18px;
+
+  display:flex;
+
+  justify-content:center;
+
+  align-items:center;
+
+  border-radius:50%;
+
+  background:#ecfdf3;
+
+  color:#16a34a;
+
+  font-size:11px;
+
+}
+
+
+/* ================================
+   MOBILE
+================================ */
+
+@media(max-width:420px){
+
+  body{
+    padding:14px;
+  }
+
+  .payment-card{
+    padding:
+      25px 18px 22px;
+  }
+
+  .amount{
+    font-size:42px;
+  }
+
+}
+
 </style>
 </head>
 
 <body>
 
-<div class="card">
 
-  <h2>CEZOO Payment</h2>
+<div class="payment-card">
 
-  <div class="sub">
-    Cashfree live payment test
+
+  <!-- BRAND -->
+
+  <div class="brand">
+
+    <div class="brand-name">
+      CEZOO
+    </div>
+
+    <div class="payment-title">
+      Secure UPI Payment
+    </div>
+
   </div>
 
-  <div class="amount">
-    ₹1
+
+  <!-- AMOUNT -->
+
+  <div class="amount-box">
+
+    <div class="amount-label">
+      Amount to Pay
+    </div>
+
+    <div class="amount">
+      ₹1
+    </div>
+
+    <div class="test-label">
+      TEST PAYMENT
+    </div>
+
   </div>
 
-  <input
-    id="mobile"
-    type="tel"
-    maxlength="10"
-    placeholder="Enter mobile number"
+
+  <!-- FORM -->
+
+  <div class="form-section">
+
+    <label class="input-label">
+      Mobile Number
+    </label>
+
+
+    <div class="mobile-wrap">
+
+      <div class="country-code">
+        +91
+      </div>
+
+
+      <input
+        id="mobile"
+        type="tel"
+        inputmode="numeric"
+        maxlength="10"
+        autocomplete="tel"
+        placeholder="Enter 10 digit number"
+      >
+
+    </div>
+
+
+    <button
+      class="pay-btn"
+      id="payBtn"
+    >
+      Pay ₹1
+    </button>
+
+  </div>
+
+
+  <!-- LOADING -->
+
+  <div
+    class="loading-area"
+    id="loadingArea"
   >
 
-  <button id="payBtn">
-    Pay ₹1
-  </button>
+    <div class="spinner"></div>
 
-  <div id="spinner" class="spinner"></div>
+  </div>
+
 
   <div id="status"></div>
+
+
+  <!-- SECURE -->
+
+  <div class="secure">
+
+    <div class="lock">
+      ✓
+    </div>
+
+    Secured payment powered by Cashfree
+
+  </div>
+
 
 </div>
 
 
+
 <script>
+
+/* =====================================
+   CONFIG
+===================================== */
 
 const BACKEND =
   "https://cashfreebackend-sxcz.onrender.com";
 
+
+/*
+  IMPORTANT:
+
+  If backend root shows:
+
+  mode:"sandbox"
+
+  use:
+  mode:"sandbox"
+
+  If backend shows:
+
+  mode:"production"
+
+  change below to:
+  mode:"production"
+*/
 
 const cashfree =
   Cashfree({
@@ -147,54 +603,128 @@ const cashfree =
 
 
 const payBtn =
-  document.getElementById("payBtn");
+  document.getElementById(
+    "payBtn"
+  );
+
 
 const statusBox =
-  document.getElementById("status");
+  document.getElementById(
+    "status"
+  );
 
-const spinner =
-  document.getElementById("spinner");
 
+const loadingArea =
+  document.getElementById(
+    "loadingArea"
+  );
+
+
+const mobileInput =
+  document.getElementById(
+    "mobile"
+  );
+
+
+
+/* =====================================
+   ONLY NUMBERS IN MOBILE
+===================================== */
+
+mobileInput.addEventListener(
+  "input",
+  function(){
+
+    this.value =
+      this.value
+      .replace(/\D/g,"")
+      .slice(0,10);
+
+  }
+);
+
+
+
+/* =====================================
+   STATUS
+===================================== */
 
 function setStatus(text){
 
-  statusBox.textContent = text;
+  statusBox.textContent =
+    text || "";
 
 }
 
+
+
+/* =====================================
+   LOADING
+===================================== */
 
 function loading(show){
 
-  spinner.style.display =
-    show ? "block" : "none";
+  if(show){
 
-  payBtn.disabled = show;
+    loadingArea.classList.add(
+      "show"
+    );
+
+    payBtn.disabled =
+      true;
+
+    payBtn.textContent =
+      "Please wait...";
+
+  }
+
+  else{
+
+    loadingArea.classList.remove(
+      "show"
+    );
+
+    payBtn.disabled =
+      false;
+
+    payBtn.textContent =
+      "Pay ₹1";
+
+  }
 
 }
 
 
-/* ============================
-   PAY BUTTON
-============================ */
+
+/* =====================================
+   PAY
+===================================== */
 
 payBtn.addEventListener(
   "click",
+
   async function(){
 
     const mobile =
-      document
-      .getElementById("mobile")
+      mobileInput
       .value
+      .replace(/\D/g,"")
       .trim();
 
 
+    /* VALIDATE MOBILE */
+
     if(
-      !/^[6-9][0-9]{9}$/.test(mobile)
+      !/^[6-9]\d{9}$/.test(
+        mobile
+      )
     ){
 
-      alert(
-        "Enter valid 10 digit mobile number"
+      setStatus(
+        "Please enter a valid 10 digit mobile number."
       );
+
+      mobileInput.focus();
 
       return;
 
@@ -203,40 +733,74 @@ payBtn.addEventListener(
 
     loading(true);
 
+
     setStatus(
-      "Creating ₹1 order..."
+      "Creating secure payment..."
     );
 
 
     try{
 
+
+      /* ============================
+         CREATE CASHFREE ORDER
+      ============================ */
+
       const response =
         await fetch(
-          BACKEND + "/create-order",
+
+          BACKEND +
+          "/create-order",
+
           {
 
             method:"POST",
 
             headers:{
+
               "Content-Type":
                 "application/json"
+
             },
 
-            body:JSON.stringify({
 
-              amount:1,
+            body:
+              JSON.stringify({
 
-              customer_phone:
-                mobile
+                amount:1,
 
-            })
+                mobile:
+                  mobile,
+
+                customer_phone:
+                  mobile
+
+              })
 
           }
+
         );
 
 
-      const data =
-        await response.json();
+
+      let data;
+
+
+      try{
+
+        data =
+          await response.json();
+
+      }
+
+      catch{
+
+        throw new Error(
+          "Invalid response from payment server"
+        );
+
+      }
+
 
 
       console.log(
@@ -245,37 +809,62 @@ payBtn.addEventListener(
       );
 
 
+
+      /* ============================
+         ERROR
+      ============================ */
+
       if(
         !response.ok ||
         !data.success
       ){
 
         throw new Error(
+
           data.message ||
-          "Unable to create order"
+
+          "Unable to create payment"
+
         );
 
       }
 
+
+
+      /* ============================
+         SESSION ID
+      ============================ */
 
       const paymentSessionId =
+
         data.payment_session_id ||
-        data.order?.payment_session_id;
+
+        data.order
+          ?.payment_session_id;
 
 
-      if(!paymentSessionId){
+
+      if(
+        !paymentSessionId
+      ){
 
         throw new Error(
-          "payment_session_id not received from backend"
+          "Payment session not received"
         );
 
       }
+
 
 
       setStatus(
-        "Opening payment..."
+        "Opening secure payment..."
       );
 
+
+
+      /* ============================
+         CASHFREE CHECKOUT
+      ============================ */
 
       const checkoutOptions = {
 
@@ -288,29 +877,42 @@ payBtn.addEventListener(
       };
 
 
+
       await cashfree.checkout(
         checkoutOptions
       );
 
 
     }
+
     catch(error){
 
-      console.error(error);
+
+      console.error(
+        "PAYMENT ERROR:",
+        error
+      );
+
 
       loading(false);
 
+
       setStatus(
+
         error.message ||
-        "Payment error"
+
+        "Unable to start payment."
+
       );
 
     }
 
   }
+
 );
 
 </script>
+
 
 </body>
 </html>
