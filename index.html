@@ -4,506 +4,682 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>CEZOO UPI</title>
-
-<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<title>CEZOO Café</title>
 
 <style>
 *{
-    box-sizing:border-box;
-    margin:0;
-    padding:0;
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
+
+html,body{
+  width:100%;
 }
 
 body{
-    min-height:100vh;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    background:#f6f7f7;
-    font-family:Arial,sans-serif;
-    padding:20px;
+  background:#fff;
 }
 
-.card{
-    width:100%;
-    max-width:390px;
-    background:#fff;
-    border-radius:22px;
-    padding:25px;
-    box-shadow:0 12px 35px rgba(0,0,0,.08);
+
+/* =========================
+   BANNER
+========================= */
+
+.banner{
+  width:100%;
+  height:175px;
+  position:relative;
+  overflow:hidden;
+
+  background:#7b12df;
+
+  border-radius:
+    0 0 50% 50% /
+    0 0 28px 28px;
 }
 
-.logo{
-    text-align:center;
-    font-size:30px;
-    font-weight:900;
-    color:#16a34a;
+
+/* =========================
+   STATIC LIGHTS
+========================= */
+
+.cafeLights{
+  position:absolute;
+  top:0;
+  width:155px;
+  height:70px;
+  z-index:2;
+  pointer-events:none;
 }
 
-.amount{
-    margin-top:24px;
-    padding:20px;
-    background:#f1fff6;
-    border-radius:16px;
-    text-align:center;
+.cafeLights.left{
+  left:0;
 }
 
-.amount small{
-    display:block;
-    color:#777;
-    margin-bottom:5px;
+.cafeLights.right{
+  right:0;
 }
 
-.amount strong{
-    font-size:40px;
+
+/* WIRE */
+
+.wire{
+  position:absolute;
+  top:-18px;
+
+  width:165px;
+  height:57px;
+
+  border-bottom:2px solid rgba(34,20,45,.72);
 }
 
-.title{
-    margin-top:22px;
-    font-size:13px;
-    font-weight:800;
+.left .wire{
+  left:-15px;
+  border-radius:0 0 85% 0;
+  transform:rotate(2deg);
 }
 
-.pay-btn{
-    width:100%;
-    height:58px;
-    margin-top:11px;
-    border:0;
-    border-radius:14px;
-    font-size:16px;
-    font-weight:800;
-    cursor:pointer;
+.right .wire{
+  right:-15px;
+  border-radius:0 0 0 85%;
+  transform:rotate(-2deg);
 }
 
-.phonepe{
-    background:#5f259f;
-    color:white;
+
+/* LIGHT STEM */
+
+.light{
+  position:absolute;
+  width:2px;
+  background:rgba(40,24,48,.75);
 }
 
-.paytm{
-    background:#00baf2;
-    color:white;
+
+/* BULB CAP */
+
+.light::before{
+  content:"";
+
+  position:absolute;
+  left:50%;
+  bottom:-3px;
+
+  width:7px;
+  height:5px;
+
+  transform:translateX(-50%);
+
+  background:#33263b;
+
+  border-radius:2px 2px 1px 1px;
 }
 
-.loader{
-    position:fixed;
-    inset:0;
-    background:rgba(255,255,255,.97);
-    display:none;
-    align-items:center;
-    justify-content:center;
-    z-index:999999;
+
+/* BULB */
+
+.light::after{
+  content:"";
+
+  position:absolute;
+  left:50%;
+  bottom:-13px;
+
+  width:10px;
+  height:12px;
+
+  transform:translateX(-50%);
+
+  background:#ffd85a;
+
+  border-radius:50% 50% 55% 55%;
+
+  box-shadow:
+    0 0 5px rgba(255,216,90,.95),
+    0 0 11px rgba(255,190,55,.55);
 }
 
-.loader.show{
-    display:flex;
+
+/* LEFT LIGHTS */
+
+.left .l1{
+  left:12px;
+  top:3px;
+  height:9px;
 }
 
-.loader-box{
-    text-align:center;
+.left .l2{
+  left:43px;
+  top:8px;
+  height:14px;
 }
 
-.spinner{
-    width:45px;
-    height:45px;
-    margin:auto;
-    border-radius:50%;
-    border:4px solid #ddd;
-    border-top-color:#16a34a;
-    animation:spin .7s linear infinite;
+.left .l3{
+  left:76px;
+  top:14px;
+  height:18px;
 }
 
-@keyframes spin{
-    to{
-        transform:rotate(360deg);
-    }
+.left .l4{
+  left:111px;
+  top:20px;
+  height:20px;
 }
 
-.loader-text{
-    margin-top:14px;
-    font-size:14px;
-    font-weight:800;
+.left .l5{
+  left:143px;
+  top:24px;
+  height:19px;
 }
 
-.status{
-    min-height:20px;
-    margin-top:15px;
-    text-align:center;
-    font-size:12px;
+
+/* RIGHT LIGHTS */
+
+.right .l1{
+  right:12px;
+  top:3px;
+  height:9px;
 }
 
-.error{
-    color:#dc2626;
+.right .l2{
+  right:43px;
+  top:8px;
+  height:14px;
 }
 
-.success{
-    color:#16a34a;
-    font-weight:800;
+.right .l3{
+  right:76px;
+  top:14px;
+  height:18px;
 }
+
+.right .l4{
+  right:111px;
+  top:20px;
+  height:20px;
+}
+
+.right .l5{
+  right:143px;
+  top:24px;
+  height:19px;
+}
+
+
+/* =========================
+   MOVING GROUP
+========================= */
+
+.cafeMover{
+  position:absolute;
+
+  left:0;
+  top:50%;
+
+  width:100px;
+  height:100px;
+
+  z-index:5;
+
+  /*
+    0-40% slow
+    after 40% speed increases
+  */
+  animation:
+    cafeBikeMove 8s linear infinite;
+
+  will-change:transform;
+}
+
+
+/* =========================
+   BIKE IMAGE
+========================= */
+
+.cafeImage{
+  position:absolute;
+
+  width:90px;
+  height:90px;
+
+  left:5px;
+  top:5px;
+
+  object-fit:contain;
+
+  z-index:3;
+
+  /* tiny real bike feel */
+  animation:
+    bikeRide .8s ease-in-out infinite;
+}
+
+
+@keyframes bikeRide{
+
+  0%,100%{
+    transform:translateY(0);
+  }
+
+  50%{
+    transform:translateY(-1px);
+  }
+
+}
+
+
+/* =========================
+   SPEED WAVES
+========================= */
+
+.speedWaves{
+  position:absolute;
+
+  right:74px;
+  top:50%;
+
+  width:82px;
+  height:56px;
+
+  transform:translateY(-50%);
+
+  z-index:1;
+}
+
+
+.wave{
+  position:absolute;
+
+  right:0;
+
+  height:2px;
+
+  background:linear-gradient(
+    90deg,
+    transparent,
+    rgba(255,255,255,.18),
+    rgba(255,255,255,.75)
+  );
+
+  border-radius:50px;
+
+  animation:
+    speedTrail 1.1s ease-out infinite;
+}
+
+
+.wave1{
+  width:42px;
+  top:8px;
+}
+
+.wave2{
+  width:62px;
+  top:21px;
+  animation-delay:.12s;
+}
+
+.wave3{
+  width:50px;
+  top:34px;
+  animation-delay:.24s;
+}
+
+.wave4{
+  width:30px;
+  top:46px;
+  animation-delay:.36s;
+}
+
+
+@keyframes speedTrail{
+
+  0%{
+    transform:
+      translateX(8px)
+      scaleX(.55);
+
+    opacity:0;
+  }
+
+  35%{
+    opacity:.75;
+  }
+
+  70%{
+    transform:
+      translateX(-3px)
+      scaleX(1);
+
+    opacity:.65;
+  }
+
+  100%{
+    transform:
+      translateX(-12px)
+      scaleX(1.08);
+
+    opacity:0;
+  }
+
+}
+
+
+/* ==========================================
+   BIKE MOVEMENT
+
+   0-10%  = ENTRY
+   10-40% = SLOW + SMOOTH
+   40-60% = SPEED PICKUP
+   60-100% = FAST EXIT
+========================================== */
+
+@keyframes cafeBikeMove{
+
+
+  /* START OUTSIDE */
+
+  0%{
+    transform:
+      translate(-130px,4px)
+      rotate(-1deg);
+  }
+
+
+  /* ENTRY */
+
+  10%{
+    transform:
+      translate(1vw,1px)
+      rotate(-.5deg);
+  }
+
+
+  /* =====================
+     SLOW MOTION START
+  ===================== */
+
+  15%{
+    transform:
+      translate(5vw,0px)
+      rotate(-.3deg);
+  }
+
+
+  20%{
+    transform:
+      translate(9vw,-1px)
+      rotate(0deg);
+  }
+
+
+  25%{
+    transform:
+      translate(13vw,-2px)
+      rotate(.1deg);
+  }
+
+
+  30%{
+    transform:
+      translate(17vw,-3px)
+      rotate(.2deg);
+  }
+
+
+  35%{
+    transform:
+      translate(21vw,-4px)
+      rotate(.2deg);
+  }
+
+
+  /* 40% SLOW SECTION END */
+
+  40%{
+    transform:
+      translate(25vw,-5px)
+      rotate(.3deg);
+  }
+
+
+  /* =====================
+     SPEED STARTS PICKING UP
+  ===================== */
+
+  45%{
+    transform:
+      translate(31vw,-6px)
+      rotate(.3deg);
+  }
+
+
+  50%{
+    transform:
+      translate(39vw,-7px)
+      rotate(.2deg);
+  }
+
+
+  /* FAST */
+
+  55%{
+    transform:
+      translate(49vw,-8px)
+      rotate(0deg);
+  }
+
+
+  60%{
+    transform:
+      translate(60vw,-7px)
+      rotate(-.2deg);
+  }
+
+
+  68%{
+    transform:
+      translate(72vw,-5px)
+      rotate(-.3deg);
+  }
+
+
+  76%{
+    transform:
+      translate(83vw,-3px)
+      rotate(0deg);
+  }
+
+
+  84%{
+    transform:
+      translate(93vw,-1px)
+      rotate(.3deg);
+  }
+
+
+  92%{
+    transform:
+      translate(105vw,1px)
+      rotate(.5deg);
+  }
+
+
+  /* FAST EXIT */
+
+  100%{
+    transform:
+      translate(calc(100vw + 150px),3px)
+      rotate(.7deg);
+  }
+
+}
+
+
+/* =========================
+   MOBILE
+========================= */
+
+@media(max-width:600px){
+
+  .banner{
+    height:155px;
+
+    border-radius:
+      0 0 50% 50% /
+      0 0 22px 22px;
+  }
+
+
+  /* LIGHTS */
+
+  .cafeLights{
+    width:115px;
+    height:60px;
+  }
+
+  .wire{
+    width:125px;
+    height:48px;
+  }
+
+
+  .left .l1{left:8px;}
+  .left .l2{left:31px;}
+  .left .l3{left:56px;}
+  .left .l4{left:82px;}
+  .left .l5{left:108px;}
+
+  .right .l1{right:8px;}
+  .right .l2{right:31px;}
+  .right .l3{right:56px;}
+  .right .l4{right:82px;}
+  .right .l5{right:108px;}
+
+
+  .light::after{
+    width:8px;
+    height:10px;
+  }
+
+
+  /* BIKE */
+
+  .cafeMover{
+    width:85px;
+    height:85px;
+  }
+
+  .cafeImage{
+    width:75px;
+    height:75px;
+  }
+
+
+  /* WAVES */
+
+  .speedWaves{
+    right:61px;
+    width:62px;
+    height:48px;
+  }
+
+  .wave1{
+    width:32px;
+  }
+
+  .wave2{
+    width:48px;
+  }
+
+  .wave3{
+    width:39px;
+  }
+
+  .wave4{
+    width:25px;
+  }
+
+}
+
+
+@media(max-width:390px){
+
+  .banner{
+    height:145px;
+  }
+
+}
+
 </style>
 </head>
 
+
 <body>
 
-<div class="card">
+<section class="banner">
 
-    <div class="logo">
-        CEZOO
+
+  <!-- LEFT LIGHTS -->
+
+  <div class="cafeLights left">
+
+    <div class="wire"></div>
+
+    <span class="light l1"></span>
+    <span class="light l2"></span>
+    <span class="light l3"></span>
+    <span class="light l4"></span>
+    <span class="light l5"></span>
+
+  </div>
+
+
+  <!-- RIGHT LIGHTS -->
+
+  <div class="cafeLights right">
+
+    <div class="wire"></div>
+
+    <span class="light l1"></span>
+    <span class="light l2"></span>
+    <span class="light l3"></span>
+    <span class="light l4"></span>
+    <span class="light l5"></span>
+
+  </div>
+
+
+  <!-- MOVING BIKE -->
+
+  <div class="cafeMover">
+
+
+    <!-- SPEED WAVES -->
+
+    <div class="speedWaves">
+
+      <span class="wave wave1"></span>
+      <span class="wave wave2"></span>
+      <span class="wave wave3"></span>
+      <span class="wave wave4"></span>
+
     </div>
 
-    <div class="amount">
 
-        <small>
-            Amount to Pay
-        </small>
+    <!-- BIKE -->
 
-        <strong>
-            ₹1
-        </strong>
-
-    </div>
-
-    <div class="title">
-        Select UPI App
-    </div>
-
-    <button
-        class="pay-btn phonepe"
-        onclick="startUPIPayment('phonepe')"
+    <img
+      src="BIKE.webp"
+      class="cafeImage"
+      alt=""
     >
-        Pay with PhonePe
-    </button>
 
-    <button
-        class="pay-btn paytm"
-        onclick="startUPIPayment('paytm')"
-    >
-        Pay with Paytm
-    </button>
 
-    <div
-        id="status"
-        class="status"
-    ></div>
+  </div>
 
-</div>
 
-
-<div
-    id="loader"
-    class="loader"
->
-
-    <div class="loader-box">
-
-        <div class="spinner"></div>
-
-        <div
-            id="loaderText"
-            class="loader-text"
-        >
-            Preparing payment...
-        </div>
-
-    </div>
-
-</div>
-
-
-<script>
-
-const BACKEND =
-    "https://razropay.onrender.com";
-
-const RAZORPAY_KEY =
-    "rzp_live_SqrUSaPO5pA6gt";
-
-let paymentRunning = false;
-
-let selectedApp = "";
-
-
-function showLoader(text){
-
-    document.getElementById(
-        "loaderText"
-    ).textContent = text;
-
-    document.getElementById(
-        "loader"
-    ).classList.add(
-        "show"
-    );
-}
-
-
-function hideLoader(){
-
-    document.getElementById(
-        "loader"
-    ).classList.remove(
-        "show"
-    );
-}
-
-
-function showStatus(
-    text,
-    type=""
-){
-
-    const box =
-        document.getElementById(
-            "status"
-        );
-
-    box.textContent = text;
-
-    box.className =
-        "status " + type;
-}
-
-
-async function startUPIPayment(app){
-
-    if(paymentRunning){
-        return;
-    }
-
-    paymentRunning = true;
-
-    selectedApp = app;
-
-    showStatus("");
-
-    if(app === "phonepe"){
-
-        showLoader(
-            "Preparing PhonePe..."
-        );
-
-    }else{
-
-        showLoader(
-            "Preparing Paytm..."
-        );
-
-    }
-
-
-    try{
-
-        const response =
-            await fetch(
-                BACKEND +
-                "/create-order",
-                {
-                    method:"POST",
-
-                    headers:{
-                        "Content-Type":
-                            "application/json"
-                    },
-
-                    body:
-                        JSON.stringify({
-                            amount:100
-                        })
-                }
-            );
-
-
-        const data =
-            await response.json();
-
-
-        if(
-            !response.ok ||
-            !data?.success ||
-            !data?.order
-        ){
-
-            throw new Error(
-                data?.message ||
-                "Unable to create payment"
-            );
-
-        }
-
-
-        const order =
-            data.order;
-
-
-        const options = {
-
-            key:
-                RAZORPAY_KEY,
-
-            amount:
-                order.amount,
-
-            currency:
-                order.currency ||
-                "INR",
-
-            order_id:
-                order.id,
-
-            name:
-                "CEZOO",
-
-            description:
-                app === "phonepe"
-                ? "PhonePe UPI Payment"
-                : "Paytm UPI Payment",
-
-            webview_intent:
-                true,
-
-            config:{
-
-                display:{
-
-                    blocks:{
-
-                        upi:{
-
-                            name:
-                                app === "phonepe"
-                                ? "Continue with PhonePe"
-                                : "Continue with Paytm",
-
-                            instruments:[
-                                {
-                                    method:"upi"
-                                }
-                            ]
-
-                        }
-
-                    },
-
-                    sequence:[
-                        "block.upi"
-                    ],
-
-                    preferences:{
-                        show_default_blocks:false
-                    }
-
-                }
-
-            },
-
-            theme:{
-                color:"#16a34a"
-            },
-
-            handler:function(
-                paymentResponse
-            ){
-
-                paymentRunning = false;
-
-                hideLoader();
-
-                console.log(
-                    "SUCCESS:",
-                    paymentResponse
-                );
-
-                showStatus(
-                    "Payment successful ✅",
-                    "success"
-                );
-
-            },
-
-            modal:{
-
-                ondismiss:function(){
-
-                    paymentRunning = false;
-
-                    hideLoader();
-
-                    showStatus(
-                        "Payment cancelled"
-                    );
-
-                }
-
-            }
-
-        };
-
-
-        const razorpay =
-            new Razorpay(
-                options
-            );
-
-
-        razorpay.on(
-            "payment.failed",
-            function(response){
-
-                paymentRunning = false;
-
-                hideLoader();
-
-                showStatus(
-                    response?.error
-                        ?.description ||
-                    "Payment failed",
-                    "error"
-                );
-
-            }
-        );
-
-
-        showLoader(
-            app === "phonepe"
-            ? "Opening PhonePe..."
-            : "Opening Paytm..."
-        );
-
-
-        setTimeout(
-            function(){
-
-                razorpay.open();
-
-                setTimeout(
-                    hideLoader,
-                    300
-                );
-
-            },
-            400
-        );
-
-
-    }catch(error){
-
-        paymentRunning = false;
-
-        hideLoader();
-
-        showStatus(
-            error.message ||
-            "Unable to start payment",
-            "error"
-        );
-
-    }
-
-}
-
-</script>
+</section>
 
 </body>
 </html>
