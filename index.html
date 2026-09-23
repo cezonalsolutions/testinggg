@@ -1817,6 +1817,7 @@ if(troqDesktopPC){
   pcButton.style.marginTop="12px";
   pcButton.textContent="Printer already paired on PC — Continue";
   pcButton.addEventListener("click",()=>{
+    troqPCPrinterSelected=true;
     document.getElementById("troqTestingNext").disabled=false;
     document.getElementById("troqBluetoothStatus").textContent=
       "Select your paired Bluetooth printer (not Xerox) in the print dialog.";
@@ -1835,7 +1836,7 @@ document.getElementById("troqBluetoothButton").addEventListener("click",async()=
     return;
   }
   try{
-    const device=await navigator.bluetooth.requestDevice({acceptAllDevices:true});
+    const device=await navigator.bluetooth.requestDevice({acceptAllDevices:true,optionalServices:TROQ_BLE_SERVICES});
     const deviceRow=document.getElementById("troqConnectedDevice");
     const deviceName=document.getElementById("troqConnectedName");
     /* A device picker selection alone is not a verified connection. */
@@ -1846,14 +1847,23 @@ document.getElementById("troqBluetoothButton").addEventListener("click",async()=
     const server=await device.gatt.connect();
     if(!server.connected) throw new Error("Device did not connect");
     troqConnectedPrinter=device;
+    troqPCPrinterSelected=false;
+    troqWritableCharacteristic=await troqFindWritableCharacteristic(server);
+    if(!troqWritableCharacteristic){
+      status.textContent="Bluetooth connected, but this printer has no supported writable BLE printing characteristic. On PC, use the paired-printer button for system printing.";
+      device.gatt.disconnect();
+      troqConnectedPrinter=null;
+      return;
+    }
     deviceName.textContent=device.name||"Bluetooth device";
     deviceRow.hidden=false;
     document.getElementById("troqTestingNext").disabled=false;
     status.textContent="";
     device.addEventListener("gattserverdisconnected",()=>{
       troqConnectedPrinter=null;
+      troqWritableCharacteristic=null;
       deviceRow.hidden=true;
-      document.getElementById("troqTestingNext").disabled=true;
+      document.getElementById("troqTestingNext").disabled=!troqPCPrinterSelected;
       status.textContent="Bluetooth disconnected.";
     });
   }catch(e){
@@ -1863,6 +1873,30 @@ document.getElementById("troqBluetoothButton").addEventListener("click",async()=
 
 /* NEXT: BLUETOOTH → BILL DETAILS → FIVE TEMPLATES → PRINT */
 let troqConnectedPrinter=null;
+let troqWritableCharacteristic=null;
+let troqPCPrinterSelected=false;
+// Standard BLE UART service IDs used by some ESC/POS thermal printers.
+// Bluetooth Classic SPP printers cannot be opened with Web Bluetooth.
+const TROQ_BLE_SERVICES=[
+  '0000ffe0-0000-1000-8000-00805f9b34fb',
+  '0000ff00-0000-1000-8000-00805f9b34fb',
+  '0000fff0-0000-1000-8000-00805f9b34fb',
+  '6e400001-b5a3-f393-e0a9-e50e24dcca9e',
+  '49535343-fe7d-4ae5-8fa9-9fafd205e455',
+  '0000ae30-0000-1000-8000-00805f9b34fb'
+];
+async function troqFindWritableCharacteristic(server){
+  for(const uuid of TROQ_BLE_SERVICES){
+    try{
+      const service=await server.getPrimaryService(uuid);
+      for(const ch of await service.getCharacteristics()){
+        if(ch.properties.write || ch.properties.writeWithoutResponse)return ch;
+      }
+    }catch(e){/* printer does not expose this service */}
+  }
+  return null;
+}
+
 let troqFlowStage=0;
 let troqLogoData="";
 const troqFlowPages=["troqFlowBluetooth","troqFlowDetails","troqFlowTemplates"];
@@ -1872,7 +1906,7 @@ function troqShowStage(stage){
   document.getElementById("troqFlowHeader").textContent=["Testing","Bill Details","Select Template"][stage];
   const next=document.getElementById("troqTestingNext");
   next.textContent=stage===2?"Select & Print":"Next";
-  next.disabled=stage===0?!document.getElementById("troqConnectedDevice").hidden:stage===1?!troqDetailsComplete():false;
+  next.disabled=stage===0?(!troqPCPrinterSelected && (!troqConnectedPrinter?.gatt?.connected || !troqWritableCharacteristic)):stage===1?!troqDetailsComplete():false;
   if(stage===2)troqUpdateTemplates();
   document.querySelector(".troqTestingBody").scrollTop=0;
 }
@@ -1967,34 +2001,61 @@ function troqBuildReceipt(){
  receipt.innerHTML=troqReceiptContents();
  return true;
 }
-/* PC: the browser prints to the printer selected in the OS print dialog.
-   Web Bluetooth GATT cannot choose a Windows/macOS print queue. */
-function troqPrintToSelectedBluetoothPrinter(){
-  const ios=window.webkit?.messageHandlers?.TROQPrinter;
-  const android=window.TROQPrinter;
-  if(ios?.postMessage || android?.printReceipt){
-    if(!troqConnectedPrinter || !troqConnectedPrinter.gatt?.connected){
-      troqShowStage(0);document.getElementById("troqBluetoothStatus").textContent="Connect your Bluetooth printer to continue.";return;
-    }
-    const rows=troqGetItems();
-    const job={
-      deviceId:troqConnectedPrinter.id,
-      deviceName:troqConnectedPrinter.name||"Bluetooth printer",
-      template:document.querySelector('input[name="troqTemplate"]:checked').value,
-      brand:document.getElementById("troqBrandName").value.trim(),
-      font:troqFontSelect.value,logo:troqLogoData,
-      address:document.getElementById("troqShopAddress").value.trim(),
-      mobile:document.getElementById("troqShopMobile").value.trim(),
-      items:rows.map(x=>({name:x.name,quantity:x.qty,price:x.price,amount:x.qty*x.price})),
-      total:rows.reduce((sum,x)=>sum+x.qty*x.price,0),
-      receiptHtml:document.getElementById("troqReceiptPrintArea").outerHTML
-    };
-    if(ios?.postMessage)ios.postMessage(job);
-    else android.printReceipt(JSON.stringify(job));
-    return;
+/* Direct BLE ESC/POS printing when printer exposes a writable UART characteristic.
+   PC paired-printer fallback remains the OS print dialog; never silently target Xerox. */
+function troqEscposReceipt(){
+  const enc=new TextEncoder();
+  const rows=troqGetItems();
+  const brand=document.getElementById("troqBrandName").value.trim();
+  const address=document.getElementById("troqShopAddress").value.trim();
+  const mobile=document.getElementById("troqShopMobile").value.trim();
+  const money=n=>n.toFixed(2);
+  const text=[brand,address,"Mobile: "+mobile,"--------------------------------", "PRODUCT              QTY    AMOUNT"];
+  for(const x of rows){
+    const name=x.name.replace(/[\r\n]/g," ");
+    text.push(name);
+    text.push("  "+x.qty+" x "+money(x.price)+" = "+money(x.qty*x.price));
   }
-  // Desktop browser: user must select the already paired printer, not Xerox.
-  window.print();
+  text.push("--------------------------------","TOTAL: Rs. "+money(rows.reduce((a,x)=>a+x.qty*x.price,0)),"Thank you!","Powered by TROQ","","","");
+  // Most generic ESC/POS printers default to ASCII-compatible code pages.
+  // Unsupported Unicode glyphs and uploaded logos require model-specific raster commands.
+  const ascii=text.join("\n").replace(/[^\x0A\x0D\x20-\x7E]/g,"?");
+  const data=enc.encode(ascii);
+  const out=new Uint8Array(5+data.length+3);
+  out.set([27,64,27,97,0],0);out.set(data,5);out.set([27,100,3],5+data.length);
+  return out;
+}
+async function troqPrintToSelectedBluetoothPrinter(){
+  const status=document.getElementById("troqBluetoothStatus");
+  const next=document.getElementById("troqTestingNext");
+  if(troqPCPrinterSelected){window.print();return;}
+  if(!troqConnectedPrinter?.gatt?.connected || !troqWritableCharacteristic){
+    troqShowStage(0);status.textContent="Connect a compatible Bluetooth printer first.";return;
+  }
+  next.disabled=true;next.textContent="Printing...";
+  try{
+    const bytes=troqEscposReceipt();
+    const characteristic=troqWritableCharacteristic;
+    // Conservative 20-byte chunks for BLE printers with a small MTU.
+    for(let i=0;i<bytes.length;i+=20){
+      const chunk=bytes.slice(i,i+20);
+      if(characteristic.properties.writeWithoutResponse && characteristic.writeValueWithoutResponse){
+        await characteristic.writeValueWithoutResponse(chunk);
+      }else if(characteristic.writeValueWithResponse){
+        await characteristic.writeValueWithResponse(chunk);
+      }else{
+        await characteristic.writeValue(chunk);
+      }
+      await new Promise(resolve=>setTimeout(resolve,35));
+    }
+    status.textContent="Receipt sent to "+(troqConnectedPrinter.name||"Bluetooth printer")+".";
+  }catch(error){
+    status.textContent="Direct Bluetooth print failed: "+error.message+". Check printer protocol and connection.";
+    troqShowStage(0);
+  }finally{
+    next.textContent="Select & Print";
+    next.disabled=false;
+  }
 }
 
 document.getElementById("troqTestingNext").addEventListener("click",()=>{
@@ -2004,7 +2065,7 @@ document.getElementById("troqTestingNext").addEventListener("click",()=>{
     if(!troqValidateDetails())return;
     troqUpdateTemplates();troqShowStage(2);return;
   }
-  if(troqBuildReceipt())troqPrintToSelectedBluetoothPrinter();
+  if(troqBuildReceipt())void troqPrintToSelectedBluetoothPrinter();
 });
 const troqOriginalClose=closeTroqSample;
 closeTroqSample=function(){if(troqFlowStage>0){troqShowStage(troqFlowStage-1);return;}troqOriginalClose();};
