@@ -121,27 +121,6 @@ body{
     z-index:2;
 }
 
-/* BACKGROUND CIRCLE */
-
-.bgCircle{
-    position:absolute;
-
-    width:110%;
-    aspect-ratio:1;
-
-    left:50%;
-    bottom:-62%;
-
-    transform:translateX(-50%);
-
-    border:1px solid rgba(255,255,255,.22);
-    border-radius:50%;
-
-    background:rgba(255,255,255,.025);
-
-    z-index:1;
-}
-
 /* PRODUCT IMAGE */
 
 .productImage{
@@ -181,12 +160,15 @@ body{
     padding:30px 25px 25px;
 }
 
-/* TITLE */
+/* LOGIN TITLE — NEW FONT */
 
 .loginTitle{
-    font-size:22px;
-    font-weight:700;
-    color:#333;
+    font-family:'Outfit',sans-serif;
+    font-size:25px;
+    font-weight:500;
+    letter-spacing:-0.6px;
+    line-height:1.3;
+    color:#242424;
 }
 
 /* MOBILE INPUT */
@@ -310,7 +292,8 @@ body{
     }
 
     .loginTitle{
-        font-size:20px;
+        font-size:23px;
+        font-weight:500;
     }
 
     .phoneBox{
@@ -394,8 +377,6 @@ body{
         <div class="billingText">
             Billing Software
         </div>
-
-        <div class="bgCircle"></div>
 
         <!-- PRODUCT IMAGE -->
 
