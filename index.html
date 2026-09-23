@@ -541,6 +541,275 @@ body{
 #mainUI1 .mainUI1StepHeading{font-size:17px;}
 }
 
+
+#mainUI1{padding-bottom:110px;}
+/* FIXED BOTTOM SLIDER */
+
+#mainUI1 .mainUI1SampleArea{
+    position:fixed;
+    left:0;
+    right:0;
+    bottom:0;
+    z-index:100;
+    width:100%;
+    padding:0 0 env(safe-area-inset-bottom);
+    background:#ff2380;
+    border-radius:24px 24px 0 0;
+    overflow:hidden;
+}
+
+#mainUI1 .mainUI1DragTrack{
+    position:relative;
+    width:100%;
+    height:72px;
+    overflow:hidden;
+    background:#ff2380;
+    border-radius:24px 24px 0 0;
+    user-select:none;
+    -webkit-user-select:none;
+    touch-action:pan-y;
+}
+
+/* SLIDER TEXT */
+
+#mainUI1 .mainUI1DragLabel{
+    position:absolute;
+    inset:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:0 76px;
+    color:#fff;
+    font-family:'Outfit',sans-serif;
+    font-size:18px;
+    font-weight:600;
+    white-space:nowrap;
+    pointer-events:none;
+    opacity:1;
+    transition:opacity .12s ease;
+}
+
+/* HIDE TEXT WHILE DRAGGING */
+
+#mainUI1 .mainUI1DragTrack.dragging .mainUI1DragLabel{
+    opacity:0;
+}
+
+/* ROUND DRAG HANDLE */
+
+#mainUI1 .mainUI1DragThumb{
+    position:absolute;
+    left:6px;
+    top:6px;
+    width:60px;
+    height:60px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border:0;
+    border-radius:50%;
+    background:#fff;
+    color:#ff2380;
+    font-size:22px;
+    cursor:grab;
+    touch-action:none;
+    box-shadow:0 3px 12px rgba(0,0,0,.12);
+    z-index:2;
+}
+
+#mainUI1 .mainUI1DragThumb:active{
+    cursor:grabbing;
+}
+
+#mainUI1 .mainUI1DragThumb:focus-visible{
+    outline:3px solid #222;
+    outline-offset:-3px;
+}
+
+
+/* SAMPLE POPUP */
+
+.troqSampleOverlay{
+    display:none;
+    position:fixed;
+    inset:0;
+    z-index:1000;
+    background:rgba(0,0,0,.55);
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+}
+
+.troqSampleOverlay.show{
+    display:flex;
+}
+
+.troqSamplePopup{
+    width:100%;
+    max-width:390px;
+    max-height:90dvh;
+    overflow-y:auto;
+    background:#fff;
+    border-radius:22px;
+    padding:22px;
+}
+
+.troqSampleHeader{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:20px;
+}
+
+.troqSampleHeader h2{
+    font-size:21px;
+    font-weight:600;
+    color:#222;
+}
+
+.troqSampleClose{
+    width:34px;
+    height:34px;
+    border:none;
+    border-radius:50%;
+    background:#f4f4f4;
+    color:#333;
+    font-size:23px;
+    cursor:pointer;
+}
+
+/* RECEIPT */
+
+.troqReceipt{
+    width:100%;
+    max-width:290px;
+    margin:0 auto;
+    padding:20px 14px;
+    background:#fff;
+    border:1px dashed #ccc;
+    font-family:monospace;
+    color:#111;
+}
+
+.troqReceiptStore{
+    text-align:center;
+    font-size:20px;
+    font-weight:700;
+}
+
+.troqReceiptSub{
+    text-align:center;
+    font-size:11px;
+    margin-top:5px;
+}
+
+.troqReceiptDivider{
+    border-top:1px dashed #222;
+    margin:12px 0;
+}
+
+.troqReceiptRow{
+    display:flex;
+    justify-content:space-between;
+    gap:8px;
+    font-size:12px;
+    line-height:1.8;
+}
+
+.troqReceiptTotal{
+    font-size:15px;
+    font-weight:700;
+}
+
+.troqReceiptThanks{
+    margin-top:14px;
+    text-align:center;
+    font-size:12px;
+}
+
+.troqSamplePrint{
+    width:100%;
+    height:50px;
+    margin-top:20px;
+    border:none;
+    border-radius:50px;
+    background:#ff2380;
+    color:#fff;
+    font-family:'Outfit',sans-serif;
+    font-size:17px;
+    font-weight:500;
+    cursor:pointer;
+}
+
+
+
+/* FOUR SMALL HORIZONTAL VIDEO CARDS — WITH SIDE PADDING AND GAP */
+#mainUI1 .troqVideos{
+    width:100%;
+    margin:24px 0 0;
+    overflow:hidden;
+}
+#mainUI1 .troqVideosGrid{
+    display:flex;
+    flex-wrap:nowrap;
+    gap:12px;
+    width:100%;
+    overflow-x:auto;
+    overflow-y:hidden;
+    padding:0 16px 12px;
+    scroll-snap-type:x mandatory;
+    scroll-behavior:smooth;
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:none;
+    -ms-overflow-style:none;
+}
+#mainUI1 .troqVideosGrid::-webkit-scrollbar{display:none}
+.troqVideoCard{
+    flex:0 0 clamp(170px,58vw,230px);
+    min-width:0;
+    overflow:hidden;
+    border-radius:16px;
+    background:#ffe5f0;
+    scroll-snap-align:start;
+}
+.troqVideoCard video{
+    display:block;
+    width:100%;
+    aspect-ratio:4/5;
+    object-fit:cover;
+    background:#ffe5f0;
+}
+
+
+/* PRINT ONLY RECEIPT */
+
+@media print{
+
+    body *{
+        visibility:hidden !important;
+    }
+
+    .troqReceipt,
+    .troqReceipt *{
+        visibility:visible !important;
+    }
+
+    .troqReceipt{
+        position:absolute;
+        top:0;
+        left:0;
+        width:80mm;
+        max-width:none;
+        border:none;
+        margin:0;
+    }
+
+    @page{
+        margin:0;
+    }
+}
+
+
 </style>
 </head>
 
@@ -695,6 +964,33 @@ body{
         <button class="mainUI1LoginButton" id="guestLoginButton" type="button">Login</button>
     </div>
 
+<!-- FOUR AUTO-SCROLLING VIDEOS: NO TITLES OR TEXT -->
+    <section class="troqVideos" aria-label="TROQ videos">
+        <div class="troqVideosGrid">
+            <div class="troqVideoCard">
+                <video controls playsinline preload="metadata" aria-label="Video 1">
+                    <source src="video1.mp4" type="video/mp4">
+                </video>
+            </div>
+            <div class="troqVideoCard">
+                <video controls playsinline preload="metadata" aria-label="Video 2">
+                    <source src="video2.mp4" type="video/mp4">
+                </video>
+            </div>
+            <div class="troqVideoCard">
+                <video controls playsinline preload="metadata" aria-label="Video 3">
+                    <source src="video3.mp4" type="video/mp4">
+                </video>
+            </div>
+            <div class="troqVideoCard">
+                <video controls playsinline preload="metadata" aria-label="Video 4">
+                    <source src="video4.mp4" type="video/mp4">
+                </video>
+            </div>
+        </div>
+    </section>
+
+    
     <!-- STEPS -->
     <section class="mainUI1Steps">
         <h2 class="mainUI1StepsTitle">Steps</h2>
@@ -723,13 +1019,147 @@ body{
             </div>
         </div>
     </section>
+<!-- BOTTOM DRAG SLIDER -->
+
+    <div class="mainUI1SampleArea">
+
+        <div
+            class="mainUI1DragTrack"
+            id="troqDragTrack"
+        >
+
+            <span class="mainUI1DragLabel">
+                Drag to Test Sample
+            </span>
+
+            <button
+                class="mainUI1DragThumb"
+                id="troqDragThumb"
+                type="button"
+                role="slider"
+                aria-label="Drag to test sample receipt"
+                aria-valuemin="0"
+                aria-valuemax="100"
+                aria-valuenow="0"
+            >
+                <i class="fa-solid fa-angles-right"></i>
+            </button>
+
+        </div>
+
+    </div>
+
 </div>
+
 
 <!-- MAIN UI 2: LOGGED-IN USER -->
 <div id="mainUI2" class="mainUI">
     <!-- BRO: PASTE YOUR MAIN UI 2 CONTENT HERE -->
     <div class="mainPlaceholder"><h1>Main UI 2</h1></div>
 </div>
+
+<!-- SAMPLE RECEIPT POPUP -->
+
+<div
+    class="troqSampleOverlay"
+    id="troqSampleOverlay"
+    onclick="closeTroqSample()"
+>
+
+    <div
+        class="troqSamplePopup"
+        onclick="event.stopPropagation()"
+    >
+
+        <div class="troqSampleHeader">
+
+            <h2>Sample Receipt</h2>
+
+            <button
+                class="troqSampleClose"
+                type="button"
+                onclick="closeTroqSample()"
+                aria-label="Close"
+            >
+                &times;
+            </button>
+
+        </div>
+
+        <div class="troqReceipt">
+
+            <div class="troqReceiptStore">
+                YOUR STORE
+            </div>
+
+            <div class="troqReceiptSub">
+                Your Business Address
+            </div>
+
+            <div class="troqReceiptSub">
+                Phone: 9876543210
+            </div>
+
+            <div class="troqReceiptDivider"></div>
+
+            <div class="troqReceiptRow">
+                <span>Bill No: 001</span>
+                <span>Cash</span>
+            </div>
+
+            <div class="troqReceiptDivider"></div>
+
+            <div class="troqReceiptRow">
+                <strong>Item</strong>
+                <strong>Amount</strong>
+            </div>
+
+            <div class="troqReceiptRow">
+                <span>Milk x 2</span>
+                <span>₹60.00</span>
+            </div>
+
+            <div class="troqReceiptRow">
+                <span>Bread x 1</span>
+                <span>₹40.00</span>
+            </div>
+
+            <div class="troqReceiptRow">
+                <span>Biscuits x 2</span>
+                <span>₹20.00</span>
+            </div>
+
+            <div class="troqReceiptDivider"></div>
+
+            <div class="troqReceiptRow troqReceiptTotal">
+                <span>TOTAL</span>
+                <span>₹120.00</span>
+            </div>
+
+            <div class="troqReceiptDivider"></div>
+
+            <div class="troqReceiptThanks">
+                Thank You! Visit Again.
+            </div>
+
+            <div class="troqReceiptSub">
+                Powered by TROQ
+            </div>
+
+        </div>
+
+        <button
+            class="troqSamplePrint"
+            type="button"
+            onclick="window.print()"
+        >
+            Print Sample
+        </button>
+
+    </div>
+
+</div>
+
 
 <script>
 
@@ -795,12 +1225,15 @@ function openMainUI(type){
     document.body.style.overflow = "auto";
     document.body.style.background = "#fff";
     window.scrollTo(0,0);
+    if(type === 1) troqStartVideoScroll();
+    else clearInterval(troqVideoTimer);
 }
 
 /* GUEST LOGIN BUTTON → SAME LOGIN SCREEN */
 document.getElementById("guestLoginButton").addEventListener("click",()=>{
     document.getElementById("mainUI1").classList.remove("active");
     document.getElementById("mainUI2").classList.remove("active");
+    clearInterval(troqVideoTimer);
     screen.style.display = "flex";
     screen.classList.remove("keyboardOpen");
     document.documentElement.style.overflow = "hidden";
@@ -1074,6 +1507,225 @@ document.addEventListener("focusout",()=>{
 /* INITIAL */
 
 updateButton();
+
+
+/* AUTO-SCROLL VIDEO CARDS — ONE CARD AT A TIME */
+const troqVideosGrid = document.querySelector('.troqVideosGrid');
+const troqVideoCards = [...troqVideosGrid.querySelectorAll('.troqVideoCard')];
+let troqVideoIndex = 0;
+let troqVideoTimer;
+
+function troqScrollNextVideo(){
+    if(!troqVideoCards.length) return;
+    troqVideoIndex = (troqVideoIndex + 1) % troqVideoCards.length;
+    troqVideosGrid.scrollTo({
+        left: troqVideoCards[troqVideoIndex].offsetLeft - troqVideoCards[0].offsetLeft,
+        behavior: 'smooth'
+    });
+}
+function troqStartVideoScroll(){
+    clearInterval(troqVideoTimer);
+    troqVideoTimer = setInterval(troqScrollNextVideo, 3000);
+}
+/* Start when guest screen opens */
+troqVideosGrid.addEventListener('pointerdown', () => clearInterval(troqVideoTimer));
+troqVideosGrid.addEventListener('pointerup', troqStartVideoScroll);
+troqVideosGrid.addEventListener('pointercancel', troqStartVideoScroll);
+troqVideosGrid.addEventListener('focusin', () => clearInterval(troqVideoTimer));
+troqVideosGrid.addEventListener('focusout', troqStartVideoScroll);
+document.addEventListener('visibilitychange', () => {
+    if(document.hidden) clearInterval(troqVideoTimer);
+    else troqStartVideoScroll();
+});
+
+/* DRAG SLIDER */
+
+const troqTrack = document.getElementById("troqDragTrack");
+const troqThumb = document.getElementById("troqDragThumb");
+
+let troqDragging = false;
+let troqStartX = 0;
+let troqStartLeft = 6;
+let troqLeft = 6;
+let troqResetTimer = null;
+
+const troqMinLeft = 6;
+
+function troqMaxLeft(){
+    return Math.max(
+        troqMinLeft,
+        troqTrack.clientWidth - troqThumb.offsetWidth - 6
+    );
+}
+
+function troqSetDrag(left){
+
+    troqLeft = Math.max(
+        troqMinLeft,
+        Math.min(troqMaxLeft(),left)
+    );
+
+    troqThumb.style.left = troqLeft + "px";
+
+    const progress = Math.round(
+        100 * (troqLeft - troqMinLeft) /
+        Math.max(1,troqMaxLeft() - troqMinLeft)
+    );
+
+    troqThumb.setAttribute(
+        "aria-valuenow",
+        String(progress)
+    );
+}
+
+/* RESET + SHOW TEXT AGAIN */
+
+function troqResetDrag(){
+
+    clearTimeout(troqResetTimer);
+
+    troqThumb.style.transition = "left .25s ease";
+
+    troqSetDrag(troqMinLeft);
+
+    troqResetTimer = setTimeout(()=>{
+
+        troqThumb.style.transition = "";
+
+        troqTrack.classList.remove("dragging");
+
+    },260);
+}
+
+/* START DRAG */
+
+troqThumb.addEventListener("pointerdown",e=>{
+
+    if(e.pointerType === "mouse" && e.button !== 0){
+        return;
+    }
+
+    clearTimeout(troqResetTimer);
+
+    troqThumb.style.transition = "";
+
+    troqDragging = true;
+
+    troqStartX = e.clientX;
+    troqStartLeft = troqLeft;
+
+    /* TEXT HIDE IMMEDIATELY */
+
+    troqTrack.classList.add("dragging");
+
+    troqThumb.setPointerCapture(e.pointerId);
+
+});
+
+/* MOVING */
+
+troqThumb.addEventListener("pointermove",e=>{
+
+    if(!troqDragging){
+        return;
+    }
+
+    const distance = e.clientX - troqStartX;
+
+    troqSetDrag(troqStartLeft + distance);
+
+});
+
+/* END DRAG */
+
+function troqEndDrag(){
+
+    if(!troqDragging){
+        return;
+    }
+
+    troqDragging = false;
+
+    const progress =
+        (troqLeft - troqMinLeft) /
+        Math.max(1,troqMaxLeft() - troqMinLeft);
+
+    if(progress >= .87){
+
+        openTroqSample();
+
+    }
+
+    troqResetDrag();
+
+}
+
+troqThumb.addEventListener(
+    "pointerup",
+    troqEndDrag
+);
+
+troqThumb.addEventListener(
+    "pointercancel",
+    troqEndDrag
+);
+
+/* KEYBOARD ACCESS */
+
+troqThumb.addEventListener("keydown",e=>{
+
+    if(e.key === "Enter" || e.key === " "){
+
+        e.preventDefault();
+
+        openTroqSample();
+
+        troqResetDrag();
+
+    }
+
+});
+
+window.addEventListener("resize",()=>{
+
+    if(!troqDragging){
+        troqSetDrag(troqMinLeft);
+    }
+
+});
+
+/* POPUP */
+
+function openTroqSample(){
+
+    document
+        .getElementById("troqSampleOverlay")
+        .classList.add("show");
+
+    document.body.style.overflow = "hidden";
+
+}
+
+function closeTroqSample(){
+
+    document
+        .getElementById("troqSampleOverlay")
+        .classList.remove("show");
+
+    document.body.style.overflow = "";
+
+}
+
+/* ESC CLOSE */
+
+document.addEventListener("keydown",e=>{
+
+    if(e.key === "Escape"){
+        closeTroqSample();
+    }
+
+});
+
 
 </script>
 
