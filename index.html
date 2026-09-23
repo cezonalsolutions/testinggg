@@ -952,6 +952,23 @@ body{
 .troqLogoPickerAction{flex:none;border-radius:20px;padding:8px 12px;background:#ff2380;color:white;font-size:12px;font-weight:600}
 .troqInlineError{margin:10px 0;color:#c83d65;font:500 13px 'Outfit',sans-serif}
 .troqInlineError[hidden]{display:none!important}
+/* Selected templates have different preview AND system-print appearances. */
+.troqMiniBill.t2 b{font-weight:900;font-size:17px!important;letter-spacing:.4px}
+.troqMiniBill.t2 .miniTotal{font-size:13px;border-top:2px solid #111;border-bottom:2px solid #111}
+.troqMiniBill.t3{border:2px solid #111!important;padding:7px 4px}
+.troqMiniBill.t3 .troqMiniTableHead,.troqMiniBill.t3 .troqMiniTableRow{border-left:1px solid #111;border-right:1px solid #111;padding:2px}
+.troqMiniBill.t4 i{border-top:3px double #111!important}
+.troqMiniBill.t5{border:0!important;box-shadow:none!important}
+.troqMiniBill.t5 i{display:none}
+@media print{
+ #troqReceiptPrintArea.template-2 .troqPrintName{font-size:24px!important;font-weight:900!important}
+ #troqReceiptPrintArea.template-2 .troqPrintTotal{border-top:2px solid #111;border-bottom:2px solid #111;padding:6px 0}
+ #troqReceiptPrintArea.template-3{border:2px solid #111!important;padding:3mm!important}
+ #troqReceiptPrintArea.template-3 .troqPrintTableHead,#troqReceiptPrintArea.template-3 .troqPrintTableRow{border-left:1px solid #111;border-right:1px solid #111;padding:3px}
+ #troqReceiptPrintArea.template-4 .troqPrintLine,#troqReceiptPrintArea.template-4 .troqItemDivider{border-top:3px double #111!important}
+ #troqReceiptPrintArea.template-5{border:0!important}
+ #troqReceiptPrintArea.template-5 .troqPrintLine,#troqReceiptPrintArea.template-5 .troqItemDivider{display:none!important}
+}
 </style>
 </head>
 
@@ -2072,20 +2089,29 @@ async function troqEscposReceipt(){
  const center=s=>" ".repeat(Math.max(0,Math.floor((width-s.length)/2)))+s;
  const wrap=(s,n=32)=>{const lines=[];for(const original of s.split(/\r?\n/)){let line="";for(const word of original.split(/\s+/)){if(!word)continue;if(line && line.length+word.length+1>n){lines.push(line);line="";}if(word.length>n){if(line){lines.push(line);line="";}for(let i=0;i<word.length;i+=n)lines.push(word.slice(i,i+n));}else line+=(line?" ":"")+word;}if(line)lines.push(line);}return lines;};
  const t=troqTotals(),rows=troqGetItems();
+ const template=document.querySelector('input[name="troqTemplate"]:checked')?.value||"1";
+ const rule=template==="4"?"================================":template==="5"?"":"--------------------------------";
+ const line=()=>{if(rule)write(rule+"\n");};
+ const boxed=template==="3";
+ const boxLine=(s="")=>write("|"+pad(s,30)+"|\n");
  add(27,64); // initialize
  add(27,97,1); // center
  if(troqLogoData){
    try{const raster=await troqLogoRaster();if(raster)parts.push(raster);}catch(e){/* continue with brand */}
  }
+ if(template==="2"||template==="4")add(27,69,1);
+ if(boxed)write("+------------------------------+\n");
  add(27,33,48); // double-width, double-height
  for(const line of wrap(document.getElementById("troqBrandName").value.trim(),16))write(line+"\n");
- add(27,33,0);write("\n");add(27,97,0);
- write("--------------------------------\n");
+ add(27,33,0);add(27,69,0);write("\n");add(27,97,0);
+ if(boxed)write("+------------------------------+\n");else line();
  // Explicit column widths keep headings and values within 32 printable characters.
  // 32-character receipt: 11 PRODUCT + 4 QTY + 8 PRICE + 9 AMOUNT.
  // Keep product names directly below PRODUCT, never centered over QTY/PRICE.
+ if(template==="2")add(27,69,1);
  write(pad("PRODUCT",11)+pad("QTY",4)+pad("PRICE",8)+"AMOUNT"+"\n");
- write("--------------------------------\n");
+ if(template==="2")add(27,69,0);
+ if(boxed)write("+------------------------------+\n");else line();
  for(const x of rows){
    const nameLines=wrap(x.name,11);
    const qty=String(x.qty).padStart(4);
@@ -2094,13 +2120,14 @@ async function troqEscposReceipt(){
    add(27,97,0); // left alignment for every item, including the first one
    write(pad(nameLines[0]||"",11)+qty+price+amount+"\n");
    for(const extra of nameLines.slice(1))write(extra+"\n");
-   write("--------------------------------\n");
+   if(boxed)write("+------------------------------+\n");else line();
  }
+ if(template==="2")add(27,69,1);
  write("Subtotal"+t.subtotal.toFixed(2).padStart(24)+"\n");
  const gstLabel="GST ("+t.rate+"%)";
  write(gstLabel+t.gst.toFixed(2).padStart(Math.max(1,32-gstLabel.length))+"\n");
  add(27,69,1);write("TOTAL"+t.total.toFixed(2).padStart(27)+"\n");add(27,69,0);
- write("--------------------------------\n");
+ if(boxed)write("+------------------------------+\n");else line();
  add(27,97,1);write("Thank you!\n\n");
  for(const line of wrap(document.getElementById("troqShopAddress").value.trim(),32))write(line+"\n");
  write(document.getElementById("troqShopMobile").value.trim()+"\n\n\n");
