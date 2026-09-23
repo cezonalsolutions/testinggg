@@ -1783,6 +1783,23 @@ function closeTroqSample(){
   document.getElementById("troqSampleOverlay").classList.remove("show");
   document.body.style.overflow=document.body.dataset.troqPreviousOverflow||"auto";
 }
+/* On a PC the paired printer is accessed through the OS print dialog,
+   not through the Web Bluetooth GATT picker. */
+const troqDesktopPC = /Win|Macintosh|Linux x86_64|X11/.test(navigator.userAgent) &&
+  !/Android|iPhone|iPad|iPod/.test(navigator.userAgent);
+if(troqDesktopPC){
+  const pcButton=document.createElement("button");
+  pcButton.type="button";
+  pcButton.className="troqBluetoothButton";
+  pcButton.style.marginTop="12px";
+  pcButton.textContent="Printer already paired on PC — Continue";
+  pcButton.addEventListener("click",()=>{
+    document.getElementById("troqTestingNext").disabled=false;
+    document.getElementById("troqBluetoothStatus").textContent=
+      "Select your paired Bluetooth printer (not Xerox) in the print dialog.";
+  });
+  document.getElementById("troqBluetoothButton").insertAdjacentElement("afterend",pcButton);
+}
 /* BLUETOOTH BUTTON: browser support depends on platform and printer */
 document.getElementById("troqBluetoothButton").addEventListener("click",async()=>{
   const status=document.getElementById("troqBluetoothStatus");
@@ -1908,37 +1925,34 @@ function troqBuildReceipt(){
  receipt.innerHTML=troqReceiptContents();
  return true;
 }
-/* IMPORTANT: window.print() routes to the OS printer chooser (including Xerox),
-   NOT the Bluetooth device selected above. Never fall back to window.print().
-   TROQ iOS/Android native app must implement the bridge below and print the
-   provided receipt to the exact deviceId using that printer's supported protocol.
-   A GATT connection alone does not establish printer/ESC-POS compatibility. */
+/* PC: the browser prints to the printer selected in the OS print dialog.
+   Web Bluetooth GATT cannot choose a Windows/macOS print queue. */
 function troqPrintToSelectedBluetoothPrinter(){
-  if(!troqConnectedPrinter || !troqConnectedPrinter.gatt?.connected){
-    alert("Bluetooth printer disconnected. Connect your printer again.");
-    troqShowStage(0);
+  const ios=window.webkit?.messageHandlers?.TROQPrinter;
+  const android=window.TROQPrinter;
+  if(ios?.postMessage || android?.printReceipt){
+    if(!troqConnectedPrinter || !troqConnectedPrinter.gatt?.connected){
+      alert("Connect your Bluetooth printer first.");troqShowStage(0);return;
+    }
+    const rows=troqGetItems();
+    const job={
+      deviceId:troqConnectedPrinter.id,
+      deviceName:troqConnectedPrinter.name||"Bluetooth printer",
+      template:document.querySelector('input[name="troqTemplate"]:checked').value,
+      brand:document.getElementById("troqBrandName").value.trim(),
+      font:troqFontSelect.value,logo:troqLogoData,
+      address:document.getElementById("troqShopAddress").value.trim(),
+      mobile:document.getElementById("troqShopMobile").value.trim(),
+      items:rows.map(x=>({name:x.name,quantity:x.qty,price:x.price,amount:x.qty*x.price})),
+      total:rows.reduce((sum,x)=>sum+x.qty*x.price,0),
+      receiptHtml:document.getElementById("troqReceiptPrintArea").outerHTML
+    };
+    if(ios?.postMessage)ios.postMessage(job);
+    else android.printReceipt(JSON.stringify(job));
     return;
   }
-  const job={
-    deviceId:troqConnectedPrinter.id,
-    deviceName:troqConnectedPrinter.name||"Bluetooth printer",
-    template:document.querySelector('input[name="troqTemplate"]:checked').value,
-    brand:document.getElementById("troqBrandName").value.trim(),
-    font:troqFontSelect.value,
-    logo:troqLogoData,
-    address:document.getElementById("troqShopAddress").value.trim(),
-    mobile:document.getElementById("troqShopMobile").value.trim(),
-    items:troqGetItems().map(x=>({name:x.name,quantity:x.qty,price:x.price,amount:x.qty*x.price})),
-    total:troqGetItems().reduce((sum,x)=>sum+x.qty*x.price,0),
-    receiptHtml:document.getElementById("troqReceiptPrintArea").outerHTML
-  };
-  // iOS WKWebView: register TROQPrinter as a WKScriptMessageHandler in Swift.
-  const ios=window.webkit?.messageHandlers?.TROQPrinter;
-  if(ios?.postMessage){ios.postMessage(job);return;}
-  // Android WebView: expose TROQPrinter.printReceipt(JSON) using JavascriptInterface.
-  const android=window.TROQPrinter;
-  if(android?.printReceipt){android.printReceipt(JSON.stringify(job));return;}
-  alert("TROQ Bluetooth direct printing needs the printer-specific iOS/Android app integration. Browser printing was blocked so your bill will not go to Xerox or another printer.");
+  // Desktop browser: user must select the already paired printer, not Xerox.
+  window.print();
 }
 
 document.getElementById("troqTestingNext").addEventListener("click",()=>{
