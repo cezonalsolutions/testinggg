@@ -924,6 +924,21 @@ body{
 #troqReceiptPrintArea.template-5 .troqPrintName{text-align:center!important}
 #troqReceiptPrintArea .troqPrintLogo{display:block;margin:0 auto 7px;max-width:32mm;max-height:28mm;object-fit:contain}
 #troqReceiptPrintArea .troqPrintAddress,#troqReceiptPrintArea .troqPrintMobile{text-align:center;font-size:11px;margin:3px 0;overflow-wrap:anywhere}
+/* RECEIPT ALIGNMENT + SEPARATOR AFTER EVERY PRODUCT */
+#troqReceiptPrintArea .troqPrintName,
+#troqReceiptPrintArea .troqPrintAddress,
+#troqReceiptPrintArea .troqPrintMobile,
+#troqReceiptPrintArea .troqPrintThanks{text-align:center!important;width:100%}
+#troqReceiptPrintArea .troqPrintLogo{display:block;margin-left:auto!important;margin-right:auto!important}
+#troqReceiptPrintArea .troqPrintTableRow span:first-child{text-align:center;overflow-wrap:anywhere}
+#troqReceiptPrintArea .troqItemDivider{border-top:1px dashed #111;margin:7px 0}
+.troqMiniBill .troqMiniItemDivider{margin:5px 0;border-top:1px dashed #888}
+@media print{
+ #troqReceiptPrintArea .troqPrintName,
+ #troqReceiptPrintArea .troqPrintAddress,
+ #troqReceiptPrintArea .troqPrintMobile{text-align:center!important}
+ #troqReceiptPrintArea .troqItemDivider{border-top:1px dashed #000!important;margin:7px 0}
+}
 /* LOGO UPLOAD CARD + QUIET INLINE VALIDATION */
 .troqLogoInput[hidden]{display:none!important}
 .troqLogoPicker{display:flex;align-items:center;gap:12px;width:100%;min-height:86px;border:1.5px dashed #ff8bb9;border-radius:16px;background:#fff7fa;padding:14px;cursor:pointer;font-family:'Outfit',sans-serif}
@@ -2015,7 +2030,7 @@ function troqReceiptContents(){
  return (troqLogoData?'<img class="troqPrintLogo" alt="" src="'+troqLogoData+'">':"")+
  '<div class="troqPrintName" style="font-family:'+troqFontCSS()+'">'+brand+'</div><div class="troqPrintLine"></div>'+
  '<div class="troqPrintTableHead"><span>Product</span><span>Qty</span><span>Price</span><span>Amount</span></div>'+
- rows.map(x=>'<div class="troqPrintTableRow"><span>'+troqEscapeHTML(x.name)+'</span><span>'+x.qty+'</span><span>'+troqMoney(x.price)+'</span><span>'+troqMoney(x.qty*x.price)+'</span></div>').join("")+
+ rows.map(x=>'<div class="troqPrintTableRow"><span>'+troqEscapeHTML(x.name)+'</span><span>'+x.qty+'</span><span>'+troqMoney(x.price)+'</span><span>'+troqMoney(x.qty*x.price)+'</span></div><div class="troqItemDivider"></div>').join("")+
  '<div class="troqPrintLine"></div><div class="troqPrintRow"><span>Subtotal</span><span>'+troqMoney(t.subtotal)+'</span></div>'+
  '<div class="troqPrintRow"><span>GST ('+t.rate+'%)</span><span>'+troqMoney(t.gst)+'</span></div>'+
  '<div class="troqPrintRow troqPrintTotal"><span>GRAND TOTAL</span><span>'+troqMoney(t.total)+'</span></div>'+
@@ -2030,7 +2045,7 @@ function troqUpdateTemplates(){
  bill.innerHTML=(troqLogoData?'<img class="miniLogo" alt="" src="'+troqLogoData+'">':"")+
  '<b style="font-family:'+troqFontCSS()+';font-size:15px">'+brand+'</b><i></i>'+
  '<div class="troqMiniTableHead"><span>Product</span><span>Qty</span><span>Price</span><span>Amt</span></div>'+
- rows.map(x=>'<div class="troqMiniTableRow"><span>'+troqEscapeHTML(x.name)+'</span><span>'+x.qty+'</span><span>'+x.price.toFixed(2)+'</span><span>'+(x.qty*x.price).toFixed(2)+'</span></div>').join("")+
+ rows.map(x=>'<div class="troqMiniTableRow"><span>'+troqEscapeHTML(x.name)+'</span><span>'+x.qty+'</span><span>'+x.price.toFixed(2)+'</span><span>'+(x.qty*x.price).toFixed(2)+'</span></div><i class="troqMiniItemDivider"></i>').join("")+
  '<i></i><small>Subtotal '+troqMoney(t.subtotal)+'</small><small>GST ('+t.rate+'%) '+troqMoney(t.gst)+'</small><div class="miniTotal">TOTAL '+troqMoney(t.total)+'</div><i></i><small>'+address+'</small><small>'+mobile+'</small>';
  });
 }
@@ -2068,17 +2083,19 @@ async function troqEscposReceipt(){
  for(const x of rows){
    const amount=x.qty*x.price;
    write(pad("",19)+String(x.qty).padStart(3)+amount.toFixed(2).padStart(10)+"\n");
-   for(const line of wrap(x.name,32))write(line+"\n");
+   add(27,97,1); // center each product name
+  for(const line of wrap(x.name,32))write(line+"\n");
+  add(27,97,0); // return to aligned columns
+  write("--------------------------------\n"); // divider after every product
  }
- write("--------------------------------\n");
  write("Subtotal"+t.subtotal.toFixed(2).padStart(24)+"\n");
  const gstLabel="GST ("+t.rate+"%)";
  write(gstLabel+t.gst.toFixed(2).padStart(Math.max(1,32-gstLabel.length))+"\n");
  add(27,69,1);write("TOTAL"+t.total.toFixed(2).padStart(27)+"\n");add(27,69,0);
  write("--------------------------------\n");
  add(27,97,1);write("Thank you!\n\n");
- for(const line of wrap(document.getElementById("troqShopAddress").value.trim(),32))write(center(line)+"\n");
- write(center(document.getElementById("troqShopMobile").value.trim())+"\n\n\n");
+ for(const line of wrap(document.getElementById("troqShopAddress").value.trim(),32))write(line+"\n");
+ write(document.getElementById("troqShopMobile").value.trim()+"\n\n\n");
  add(27,100,3);
  const len=parts.reduce((n,p)=>n+p.length,0),out=new Uint8Array(len);let offset=0;
  for(const part of parts){out.set(part,offset);offset+=part.length;}
