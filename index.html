@@ -867,6 +867,15 @@ body{
 .troqTestingNext{display:block;width:100%;max-width:440px;height:56px;margin:0 auto;border:0;border-radius:16px;background:#ff2380;color:#fff;font:600 18px 'Outfit',sans-serif;cursor:pointer}
 .troqTestingNext:disabled{background:#f6bfd7;color:#fff;cursor:not-allowed;opacity:1}
 
+/* PRINTED BILL: PRODUCT NAME | QUANTITY | PRICE | AMOUNT */
+.troqPrintTableHead,.troqPrintTableRow{display:grid;grid-template-columns:minmax(0,1fr) 36px 52px 60px;gap:4px;align-items:start;margin:5px 0;font:11px monospace}
+.troqPrintTableHead{font-weight:700;border-bottom:1px dashed #111;padding-bottom:5px}
+.troqPrintTableHead span:not(:first-child),.troqPrintTableRow span:not(:first-child){text-align:right}
+.troqPrintTableRow span:first-child{overflow-wrap:anywhere}
+.troqMiniBill .troqMiniTableHead,.troqMiniBill .troqMiniTableRow{display:grid;grid-template-columns:minmax(0,1fr) 17px 26px 30px;gap:2px;text-align:left;margin:5px 0;font:7px monospace}
+.troqMiniBill .troqMiniTableHead{font-weight:bold;border-bottom:1px dashed #888;padding-bottom:3px}
+.troqMiniBill .troqMiniTableHead span:not(:first-child),.troqMiniBill .troqMiniTableRow span:not(:first-child){text-align:right}
+.troqMiniBill .troqMiniTableRow span:first-child{overflow-wrap:anywhere}
 /* TESTING FLOW: BRAND DETAILS + FIVE RECEIPT TEMPLATES */
 .troqFlowPage[hidden]{display:none!important}
 .troqFlowPage{width:100%;max-width:440px;margin:0 auto}
@@ -908,6 +917,17 @@ body{
  #troqReceiptPrintArea.template-4 .troqPrintLine{border-top:3px double #111}
  #troqReceiptPrintArea.template-5 .troqPrintName{text-align:left}
 }
+
+/* LOGO UPLOAD CARD + QUIET INLINE VALIDATION */
+.troqLogoInput[hidden]{display:none!important}
+.troqLogoPicker{display:flex;align-items:center;gap:12px;width:100%;min-height:86px;border:1.5px dashed #ff8bb9;border-radius:16px;background:#fff7fa;padding:14px;cursor:pointer;font-family:'Outfit',sans-serif}
+.troqLogoPickerIcon{flex:none;width:44px;height:44px;display:grid;place-items:center;border-radius:12px;background:#ffe1ee;color:#ff2380;font-size:20px}
+.troqLogoPickerText{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;overflow-wrap:anywhere}
+.troqLogoPickerText strong{font-size:15px;font-weight:600;color:#242424}
+.troqLogoPickerText small{font-size:12px;color:#777}
+.troqLogoPickerAction{flex:none;border-radius:20px;padding:8px 12px;background:#ff2380;color:white;font-size:12px;font-weight:600}
+.troqInlineError{margin:10px 0;color:#c83d65;font:500 13px 'Outfit',sans-serif}
+.troqInlineError[hidden]{display:none!important}
 </style>
 </head>
 
@@ -1206,13 +1226,16 @@ body{
       <label class="troqFlowLabel" for="troqShopMobile">Mobile number to print on bill</label>
       <input class="troqFlowInput" id="troqShopMobile" type="tel" inputmode="numeric" maxlength="10" placeholder="10-digit mobile number">
       <label class="troqFlowLabel" for="troqBrandLogo">Upload logo (optional)</label>
-      <input class="troqLogoInput" id="troqBrandLogo" type="file" accept="image/png,image/jpeg,image/webp">
+      <label class="troqLogoPicker" for="troqBrandLogo"><span class="troqLogoPickerIcon"><i class="fa-solid fa-cloud-arrow-up"></i></span><span class="troqLogoPickerText"><strong id="troqLogoPickerTitle">Upload your logo</strong><small id="troqLogoPickerSubtitle">PNG, JPG or WebP · up to 2 MB</small></span><span class="troqLogoPickerAction">Browse</span></label>
+      <input class="troqLogoInput" id="troqBrandLogo" type="file" accept="image/png,image/jpeg,image/webp" hidden>
+      <p class="troqInlineError" id="troqLogoError" role="status" hidden></p>
       <img class="troqLogoPreview" id="troqLogoPreview" alt="Logo preview" hidden>
       <label class="troqFlowLabel">Products</label>
       <div class="troqItemHead"><span>Product name</span><span>Quantity</span><span>Price ₹</span><span></span></div>
       <div id="troqBillItems"></div>
       <button type="button" class="troqAddItem" id="troqAddItem">+ Add product</button>
       <div class="troqBillTotal">Total <strong id="troqLiveTotal">₹0.00</strong></div>
+      <p class="troqInlineError" id="troqDetailsError" role="status" hidden></p>
     </div>
     <div class="troqFlowPage" id="troqFlowTemplates" hidden>
       <h2 class="troqFlowTitle">Choose a bill template</h2>
@@ -1849,7 +1872,7 @@ function troqShowStage(stage){
   document.getElementById("troqFlowHeader").textContent=["Testing","Bill Details","Select Template"][stage];
   const next=document.getElementById("troqTestingNext");
   next.textContent=stage===2?"Select & Print":"Next";
-  next.disabled=stage===0?!document.getElementById("troqConnectedDevice").hidden:false;
+  next.disabled=stage===0?!document.getElementById("troqConnectedDevice").hidden:stage===1?!troqDetailsComplete():false;
   if(stage===2)troqUpdateTemplates();
   document.querySelector(".troqTestingBody").scrollTop=0;
 }
@@ -1868,7 +1891,10 @@ troqAddBillRow();
 document.getElementById("troqAddItem").onclick=()=>troqAddBillRow();
 document.getElementById("troqBrandLogo").addEventListener("change",e=>{
   const file=e.target.files?.[0];if(!file)return;
-  if(!["image/png","image/jpeg","image/webp"].includes(file.type)||file.size>2*1024*1024){alert("Choose a PNG, JPG or WebP logo under 2 MB.");e.target.value="";return;}
+  if(!["image/png","image/jpeg","image/webp"].includes(file.type)||file.size>2*1024*1024){troqSetError("troqLogoError","Choose a PNG, JPG or WebP logo under 2 MB.");e.target.value="";troqLogoData="";return;}
+  troqSetError("troqLogoError","");
+  document.getElementById("troqLogoPickerTitle").textContent=file.name;
+  document.getElementById("troqLogoPickerSubtitle").textContent="Logo ready for your bill";
   const reader=new FileReader();reader.onload=()=>{
     troqLogoData=reader.result;
     const preview=document.getElementById("troqLogoPreview");preview.src=troqLogoData;preview.hidden=false;
@@ -1885,15 +1911,30 @@ document.getElementById("troqBrandName").addEventListener("input",troqUpdateFont
 troqUpdateFontPreview();
 function troqGetItems(){return [...document.querySelectorAll(".troqItemRow")].map(row=>({name:row.querySelector(".troqItemName").value.trim(),qty:Number(row.querySelector(".troqItemQty").value),price:Number(row.querySelector(".troqItemPrice").value),priceEntered:row.querySelector(".troqItemPrice").value!==""})).filter(x=>x.name&&Number.isInteger(x.qty)&&x.qty>0&&x.priceEntered&&Number.isFinite(x.price)&&x.price>=0);}
 function troqMoney(n){return "₹"+n.toFixed(2);}
-function troqUpdateTotal(){document.getElementById("troqLiveTotal").textContent=troqMoney(troqGetItems().reduce((sum,x)=>sum+x.qty*x.price,0));}
-function troqValidateDetails(){
- if(!document.getElementById("troqBrandName").value.trim()){alert("Enter brand name.");troqShowStage(1);return false;}
- if(!document.getElementById("troqShopAddress").value.trim()){alert("Enter shop address.");troqShowStage(1);return false;}
- if(!/^[0-9]{10}$/.test(document.getElementById("troqShopMobile").value.trim())){alert("Enter a valid 10-digit shop mobile number.");troqShowStage(1);return false;}
- const items=troqGetItems();
- if(!items.length||[...document.querySelectorAll(".troqItemRow")].some(row=>row.querySelector(".troqItemName").value.trim()&&!items.some(x=>x.name===row.querySelector(".troqItemName").value.trim()&&x.qty===Number(row.querySelector(".troqItemQty").value)&&x.price===Number(row.querySelector(".troqItemPrice").value)))){alert("Enter product name, quantity and price for every product.");troqShowStage(1);return false;}
- return true;
+function troqUpdateTotal(){document.getElementById("troqLiveTotal").textContent=troqMoney(troqGetItems().reduce((sum,x)=>sum+x.qty*x.price,0));troqSyncDetailsButton();}
+function troqSetError(id,message){
+ const el=document.getElementById(id);el.textContent=message;el.hidden=!message;
 }
+function troqDetailsComplete(){
+ const rows=[...document.querySelectorAll(".troqItemRow")];
+ return !!document.getElementById("troqBrandName").value.trim() &&
+ !!document.getElementById("troqShopAddress").value.trim() &&
+ /^[0-9]{10}$/.test(document.getElementById("troqShopMobile").value.trim()) &&
+ rows.length>0 && rows.every(row=>{
+  const name=row.querySelector(".troqItemName").value.trim();
+  const qty=row.querySelector(".troqItemQty").value;
+  const price=row.querySelector(".troqItemPrice").value;
+  return !!name && qty!=="" && Number.isInteger(Number(qty)) && Number(qty)>0 && price!=="" && Number.isFinite(Number(price)) && Number(price)>=0;
+ });
+}
+function troqValidateDetails(){return troqDetailsComplete();}
+function troqSyncDetailsButton(){
+ const next=document.getElementById("troqTestingNext");
+ if(troqFlowStage===1)next.disabled=!troqDetailsComplete();
+ if(troqDetailsComplete())troqSetError("troqDetailsError","");
+}
+document.getElementById("troqFlowDetails").addEventListener("input",troqSyncDetailsButton);
+document.getElementById("troqFlowDetails").addEventListener("change",troqSyncDetailsButton);
 function troqReceiptContents(){
  const brand=troqEscapeHTML(document.getElementById("troqBrandName").value.trim());
  const address=troqEscapeHTML(document.getElementById("troqShopAddress").value.trim()).replace(/\n/g,"<br>");
@@ -1901,8 +1942,8 @@ function troqReceiptContents(){
  const rows=troqGetItems();
  return (troqLogoData?'<img class="troqPrintLogo" alt="" src="'+troqLogoData+'">':"")+
  '<div class="troqPrintName" style="font-family:'+troqFontCSS()+'">'+brand+'</div><div class="troqPrintAddress">'+address+'</div><div class="troqPrintMobile">Mobile: '+mobile+'</div><div class="troqPrintLine"></div>'+
- '<div class="troqPrintRow"><b>Product × Qty</b><b>Amount</b></div>'+
- rows.map(x=>'<div class="troqPrintRow"><span>'+troqEscapeHTML(x.name)+' × '+x.qty+'</span><span>'+troqMoney(x.qty*x.price)+'</span></div>').join("")+
+ '<div class="troqPrintTableHead"><span>Product Name</span><span>Qty</span><span>Price</span><span>Amount</span></div>'+
+ rows.map(x=>'<div class="troqPrintTableRow"><span>'+troqEscapeHTML(x.name)+'</span><span>'+x.qty+'</span><span>'+troqMoney(x.price)+'</span><span>'+troqMoney(x.qty*x.price)+'</span></div>').join("")+
  '<div class="troqPrintLine"></div><div class="troqPrintRow troqPrintTotal"><span>TOTAL</span><span>'+troqMoney(rows.reduce((sum,x)=>sum+x.qty*x.price,0))+'</span></div><div class="troqPrintThanks">Thank you!<br>Powered by TROQ</div>';
 }
 function troqUpdateTemplates(){
@@ -1913,7 +1954,8 @@ function troqUpdateTemplates(){
  document.querySelectorAll(".troqMiniBill").forEach(bill=>{
  bill.innerHTML=(troqLogoData?'<img class="miniLogo" alt="" src="'+troqLogoData+'">':"")+
  '<b style="font-family:'+troqFontCSS()+'">'+brand+'</b><small>'+address+'</small><small>Mobile: '+mobile+'</small><i></i>'+
- rows.map(x=>'<em><span>'+troqEscapeHTML(x.name)+' × '+x.qty+'</span><span>'+troqMoney(x.qty*x.price)+'</span></em>').join("")+
+ '<div class="troqMiniTableHead"><span>Product</span><span>Qty</span><span>Price</span><span>Amt</span></div>'+
+ rows.map(x=>'<div class="troqMiniTableRow"><span>'+troqEscapeHTML(x.name)+'</span><span>'+x.qty+'</span><span>'+x.price.toFixed(0)+'</span><span>'+(x.qty*x.price).toFixed(0)+'</span></div>').join("")+
  '<i></i><div class="miniTotal">TOTAL '+troqMoney(rows.reduce((sum,x)=>sum+x.qty*x.price,0))+'</div>';
  });
 }
@@ -1932,7 +1974,7 @@ function troqPrintToSelectedBluetoothPrinter(){
   const android=window.TROQPrinter;
   if(ios?.postMessage || android?.printReceipt){
     if(!troqConnectedPrinter || !troqConnectedPrinter.gatt?.connected){
-      alert("Connect your Bluetooth printer first.");troqShowStage(0);return;
+      troqShowStage(0);document.getElementById("troqBluetoothStatus").textContent="Connect your Bluetooth printer to continue.";return;
     }
     const rows=troqGetItems();
     const job={
