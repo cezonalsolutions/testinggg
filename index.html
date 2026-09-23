@@ -2082,17 +2082,18 @@ async function troqEscposReceipt(){
  add(27,33,0);write("\n");add(27,97,0);
  write("--------------------------------\n");
  // Explicit column widths keep headings and values within 32 printable characters.
- write("PRODUCT       QTY  PRICE AMOUNT\n");
+ // 32-character receipt: 11 PRODUCT + 4 QTY + 8 PRICE + 9 AMOUNT.
+ // Keep product names directly below PRODUCT, never centered over QTY/PRICE.
+ write(pad("PRODUCT",11)+pad("QTY",4)+pad("PRICE",8)+"AMOUNT"+"\n");
  write("--------------------------------\n");
  for(const x of rows){
-   const amount=x.qty*x.price;
-   add(27,97,1); // Product name gets its own full-width, centered line.
-   for(const line of wrap(x.name,32))write(line+"\n");
-   add(27,97,0);
+   const nameLines=wrap(x.name,11);
    const qty=String(x.qty).padStart(4);
-   const price=x.price.toFixed(2).padStart(7);
-   const total=amount.toFixed(2).padStart(9);
-   write(" ".repeat(12)+qty+price+total+"\n");
+   const price=x.price.toFixed(2).padStart(8);
+   const amount=(x.qty*x.price).toFixed(2).padStart(9);
+   add(27,97,0); // left alignment for every item, including the first one
+   write(pad(nameLines[0]||"",11)+qty+price+amount+"\n");
+   for(const extra of nameLines.slice(1))write(extra+"\n");
    write("--------------------------------\n");
  }
  write("Subtotal"+t.subtotal.toFixed(2).padStart(24)+"\n");
@@ -2186,3 +2187,4 @@ document.addEventListener("keydown",e=>{
 
 </body>
 </html>
+<!-- TROQ receipt product column fix: product name aligns below PRODUCT -->
