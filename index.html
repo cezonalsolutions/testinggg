@@ -1839,6 +1839,7 @@ if(troqDesktopPC){
 document.getElementById("troqBluetoothButton").addEventListener("click",async()=>{
   const status=document.getElementById("troqBluetoothStatus");
   troqConnectedPrinter=null;
+  troqWritableCharacteristic=null;
   document.getElementById("troqConnectedDevice").hidden=true;
   document.getElementById("troqTestingNext").disabled=true;
   status.textContent="";
@@ -1859,9 +1860,10 @@ document.getElementById("troqBluetoothButton").addEventListener("click",async()=
     if(!server.connected) throw new Error("Device did not connect");
     troqConnectedPrinter=device;
     troqPCPrinterSelected=false;
-    troqWritableCharacteristic=await troqFindWritableCharacteristic(server);
+    const discovery=await troqFindWritableCharacteristic(server);
+    troqWritableCharacteristic=discovery.characteristic;
     if(!troqWritableCharacteristic){
-      status.textContent="Bluetooth connected, but this printer has no supported writable BLE printing characteristic. On PC, use the paired-printer button for system printing.";
+      status.textContent="Connected to " +(device.name||"device")+", but direct printing is unavailable: no writable BLE printer channel found. Services checked: "+(discovery.checked.join(", ")||"none accessible")+". If it printed before, select the same printer and browser as before. Bluetooth Classic printers require a native bridge; on PC use the paired-printer option.";
       device.gatt.disconnect();
       troqConnectedPrinter=null;
       return;
@@ -1894,18 +1896,36 @@ const TROQ_BLE_SERVICES=[
   '0000fff0-0000-1000-8000-00805f9b34fb',
   '6e400001-b5a3-f393-e0a9-e50e24dcca9e',
   '49535343-fe7d-4ae5-8fa9-9fafd205e455',
-  '0000ae30-0000-1000-8000-00805f9b34fb'
+  '0000ae30-0000-1000-8000-00805f9b34fb',
+  '0000ffb0-0000-1000-8000-00805f9b34fb',
+  '0000ff10-0000-1000-8000-00805f9b34fb',
+  '0000fff0-0000-1000-8000-00805f9b34fb',
+  '0000fee7-0000-1000-8000-00805f9b34fb'
 ];
 async function troqFindWritableCharacteristic(server){
+  const checked=[];
+  // Inspect every service the browser actually grants, not only the first
+  // characteristic of a handful of common printer UART services.
+  let services=[];
+  try{services=await server.getPrimaryServices();}catch(e){checked.push("service enumeration: "+e.message);}
+  const seen=new Set(services.map(service=>service.uuid));
   for(const uuid of TROQ_BLE_SERVICES){
-    try{
-      const service=await server.getPrimaryService(uuid);
-      for(const ch of await service.getCharacteristics()){
-        if(ch.properties.write || ch.properties.writeWithoutResponse)return ch;
-      }
-    }catch(e){/* printer does not expose this service */}
+    if(seen.has(uuid))continue;
+    try{const service=await server.getPrimaryService(uuid);services.push(service);seen.add(uuid);}
+    catch(e){/* this service is not exposed by the selected device */}
   }
-  return null;
+  for(const service of services){
+    checked.push(service.uuid);
+    try{
+      const characteristics=await service.getCharacteristics();
+      for(const ch of characteristics){
+        if(ch.properties.write || ch.properties.writeWithoutResponse){
+          return {characteristic:ch,checked};
+        }
+      }
+    }catch(e){checked.push(service.uuid+" (not readable: "+e.message+")");}
+  }
+  return {characteristic:null,checked};
 }
 
 let troqFlowStage=0;
