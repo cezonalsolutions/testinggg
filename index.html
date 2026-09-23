@@ -969,6 +969,7 @@ body{
  #troqReceiptPrintArea.template-5{border:0!important}
  #troqReceiptPrintArea.template-5 .troqPrintLine,#troqReceiptPrintArea.template-5 .troqItemDivider{display:none!important}
 }
+#troqReceiptPrintArea .troqPrintSubtext{text-align:center!important;font:12px/1.4 'Nunito',sans-serif!important;white-space:normal;overflow-wrap:anywhere;margin:3px 0 7px}
 </style>
 </head>
 
@@ -1259,7 +1260,9 @@ body{
       <h2 class="troqFlowTitle">Your bill details</h2>
       <label class="troqFlowLabel" for="troqBrandName">Brand name</label>
       <input class="troqFlowInput" id="troqBrandName" placeholder="Enter your brand name" maxlength="80">
-      <label class="troqFlowLabel" for="troqBrandFont">Font Style</label>
+      <label class="troqFlowLabel" for="troqBrandSubtext">Brand sub text (optional)</label>
+      <textarea class="troqFlowInput troqFlowTextarea" id="troqBrandSubtext" placeholder="Enter sub text below brand name (up to 2 lines)" maxlength="120" rows="2"></textarea>
+      <label class="troqFlowLabel" for="troqBrandFont">Brand name font style (20 fonts)</label>
       <select class="troqFlowInput" id="troqBrandFont"></select>
       <div id="troqFontPreview" class="troqFontPreview">Your Brand</div>
       <label class="troqFlowLabel" for="troqShopAddress">Shop address</label>
@@ -1998,6 +2001,12 @@ function troqUpdateFontPreview(){const preview=document.getElementById("troqFont
 troqFontSelect.addEventListener("change",troqUpdateFontPreview);
 document.getElementById("troqBrandName").addEventListener("input",troqUpdateFontPreview);
 troqUpdateFontPreview();
+function troqSubtextLines(){
+ const raw=document.getElementById("troqBrandSubtext").value.trim();
+ if(!raw)return [];
+ // User-entered line breaks are preserved, but receipt sub text stays at most two lines.
+ return raw.split(/\r?\n/).map(x=>x.trim()).filter(Boolean).slice(0,2);
+}
 function troqGetItems(){return [...document.querySelectorAll(".troqItemRow")].map(row=>({name:row.querySelector(".troqItemName").value.trim(),qty:Number(row.querySelector(".troqItemQty").value),price:Number(row.querySelector(".troqItemPrice").value),priceEntered:row.querySelector(".troqItemPrice").value!==""})).filter(x=>x.name&&Number.isInteger(x.qty)&&x.qty>0&&x.priceEntered&&Number.isFinite(x.price)&&x.price>=0);}
 function troqMoney(n){return "₹"+n.toFixed(2);}
 function troqTotals(){
@@ -2033,11 +2042,12 @@ document.getElementById("troqGSTPercent").addEventListener("input",troqUpdateTot
 document.getElementById("troqFlowDetails").addEventListener("change",troqSyncDetailsButton);
 function troqReceiptContents(){
  const brand=troqEscapeHTML(document.getElementById("troqBrandName").value.trim());
+ const subtext=troqSubtextLines().map(x=>troqEscapeHTML(x)).join("<br>");
  const address=troqEscapeHTML(document.getElementById("troqShopAddress").value.trim()).replace(/\n/g,"<br>");
  const mobile=troqEscapeHTML(document.getElementById("troqShopMobile").value.trim());
  const rows=troqGetItems(),t=troqTotals();
  return (troqLogoData?'<img class="troqPrintLogo" alt="" src="'+troqLogoData+'">':"")+
- '<div class="troqPrintName" style="font-family:'+troqFontCSS()+'">'+brand+'</div><div class="troqPrintLine"></div>'+
+ '<div class="troqPrintName" style="font-family:'+troqFontCSS()+'">'+brand+'</div>'+(subtext?'<div class="troqPrintSubtext">'+subtext+'</div>':'')+'<div class="troqPrintLine"></div>'+
  '<div class="troqPrintTableHead"><span>Product</span><span>Qty</span><span>Price</span><span>Amount</span></div>'+
  rows.map(x=>'<div class="troqPrintTableRow"><span>'+troqEscapeHTML(x.name)+'</span><span>'+x.qty+'</span><span>'+troqMoney(x.price)+'</span><span>'+troqMoney(x.qty*x.price)+'</span></div><div class="troqItemDivider"></div>').join("")+
  '<div class="troqPrintLine"></div><div class="troqPrintRow"><span>Subtotal</span><span>'+troqMoney(t.subtotal)+'</span></div>'+
@@ -2089,6 +2099,10 @@ async function troqEscposReceipt(){
  try{const brandRaster=await troqBrandRaster();if(brandRaster)parts.push(brandRaster);}
  catch(e){add(27,33,48);for(const l of wrap(document.getElementById("troqBrandName").value.trim(),16))write(l+"\n");add(27,33,0);}
  add(27,97,0);write("--------------------------------\n");
+ // Normal-size centered subtext immediately beneath the styled brand.
+ add(27,97,1);add(27,33,0);
+ for(const sub of troqSubtextLines())for(const line of wrap(sub,32))write(line+"\n");
+ add(27,97,0);
  // Fixed 32-column table: 10 PRODUCT + 5 QTY + 8 PRICE + 9 AMOUNT.
  // Every value is right-aligned inside its own heading's exact width.
  write("PRODUCT".padEnd(10)+right("QTY",5)+right("PRICE",8)+right("AMOUNT",9)+"\n");
