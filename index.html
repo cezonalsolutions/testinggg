@@ -925,6 +925,9 @@ body{
 #troqReceiptPrintArea .troqPrintLogo{display:block;margin:0 auto 7px;max-width:32mm;max-height:28mm;object-fit:contain}
 #troqReceiptPrintArea .troqPrintAddress,#troqReceiptPrintArea .troqPrintMobile{text-align:center;font-size:11px;margin:3px 0;overflow-wrap:anywhere}
 /* RECEIPT ALIGNMENT + SEPARATOR AFTER EVERY PRODUCT */
+#troqReceiptPrintArea .troqPrintTableHead span:first-child{text-align:left}
+#troqReceiptPrintArea .troqPrintTableRow{grid-template-columns:minmax(0,1fr) 36px 52px 60px}
+#troqReceiptPrintArea .troqPrintTableHead{grid-template-columns:minmax(0,1fr) 36px 52px 60px}
 #troqReceiptPrintArea .troqPrintName,
 #troqReceiptPrintArea .troqPrintAddress,
 #troqReceiptPrintArea .troqPrintMobile,
@@ -2078,15 +2081,19 @@ async function troqEscposReceipt(){
  for(const line of wrap(document.getElementById("troqBrandName").value.trim(),16))write(line+"\n");
  add(27,33,0);write("\n");add(27,97,0);
  write("--------------------------------\n");
- write("PRODUCT             QTY  AMOUNT\n");
+ // Explicit column widths keep headings and values within 32 printable characters.
+ write("PRODUCT       QTY  PRICE AMOUNT\n");
  write("--------------------------------\n");
  for(const x of rows){
    const amount=x.qty*x.price;
-   write(pad("",19)+String(x.qty).padStart(3)+amount.toFixed(2).padStart(10)+"\n");
-   add(27,97,1); // center each product name
-  for(const line of wrap(x.name,32))write(line+"\n");
-  add(27,97,0); // return to aligned columns
-  write("--------------------------------\n"); // divider after every product
+   add(27,97,1); // Product name gets its own full-width, centered line.
+   for(const line of wrap(x.name,32))write(line+"\n");
+   add(27,97,0);
+   const qty=String(x.qty).padStart(4);
+   const price=x.price.toFixed(2).padStart(7);
+   const total=amount.toFixed(2).padStart(9);
+   write(" ".repeat(12)+qty+price+total+"\n");
+   write("--------------------------------\n");
  }
  write("Subtotal"+t.subtotal.toFixed(2).padStart(24)+"\n");
  const gstLabel="GST ("+t.rate+"%)";
