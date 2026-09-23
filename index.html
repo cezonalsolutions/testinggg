@@ -1283,16 +1283,6 @@ body{
       <div class="troqBillTotal">Grand total <strong id="troqLiveTotal">₹0.00</strong></div>
       <p class="troqInlineError" id="troqDetailsError" role="status" hidden></p>
     </div>
-    <div class="troqFlowPage" id="troqFlowTemplates" hidden>
-      <h2 class="troqFlowTitle">Choose a bill template</h2>
-      <div class="troqTemplateGrid" id="troqTemplateGrid">
-        <label class="troqTemplateCard"><input type="radio" name="troqTemplate" value="1" checked> Classic<div class="troqMiniBill" data-template="1"></div></label>
-        <label class="troqTemplateCard"><input type="radio" name="troqTemplate" value="2"> Bold<div class="troqMiniBill t2" data-template="2"></div></label>
-        <label class="troqTemplateCard"><input type="radio" name="troqTemplate" value="3"> Boxed<div class="troqMiniBill t3" data-template="3"></div></label>
-        <label class="troqTemplateCard"><input type="radio" name="troqTemplate" value="4"> Double line<div class="troqMiniBill t4" data-template="4"></div></label>
-        <label class="troqTemplateCard"><input type="radio" name="troqTemplate" value="5"> Minimal<div class="troqMiniBill t5" data-template="5"></div></label>
-      </div>
-    </div>
   </div>
   <div class="troqTestingFooter">
     <button type="button" class="troqTestingNext" id="troqTestingNext" disabled>Next</button>
@@ -1965,15 +1955,14 @@ async function troqFindWritableCharacteristic(server){
 
 let troqFlowStage=0;
 let troqLogoData="";
-const troqFlowPages=["troqFlowBluetooth","troqFlowDetails","troqFlowTemplates"];
+const troqFlowPages=["troqFlowBluetooth","troqFlowDetails"];
 function troqShowStage(stage){
   troqFlowStage=stage;
   troqFlowPages.forEach((id,i)=>document.getElementById(id).hidden=i!==stage);
-  document.getElementById("troqFlowHeader").textContent=["Testing","Bill Details","Select Template"][stage];
+  document.getElementById("troqFlowHeader").textContent=["Testing","Bill Details"][stage];
   const next=document.getElementById("troqTestingNext");
-  next.textContent=stage===2?"Select & Print":"Next";
-  next.disabled=stage===0?(!troqPCPrinterSelected && (!troqConnectedPrinter?.gatt?.connected || !troqWritableCharacteristic)):stage===1?!troqDetailsComplete():false;
-  if(stage===2)troqUpdateTemplates();
+  next.textContent=stage===1?"Print Bill":"Next";
+  next.disabled=stage===0?(!troqPCPrinterSelected && (!troqConnectedPrinter?.gatt?.connected || !troqWritableCharacteristic)):!troqDetailsComplete();
   document.querySelector(".troqTestingBody").scrollTop=0;
 }
 function troqAddBillRow(name="",qty="1",price=""){
@@ -2056,24 +2045,10 @@ function troqReceiptContents(){
  '<div class="troqPrintRow troqPrintTotal"><span>GRAND TOTAL</span><span>'+troqMoney(t.total)+'</span></div>'+
  '<div class="troqPrintThanks">Thank you!</div><div class="troqPrintLine"></div><div class="troqPrintAddress">'+address+'</div><div class="troqPrintMobile">'+mobile+'</div>';
 }
-function troqUpdateTemplates(){
- const brand=troqEscapeHTML(document.getElementById("troqBrandName").value.trim());
- const address=troqEscapeHTML(document.getElementById("troqShopAddress").value.trim()).replace(/\n/g,"<br>");
- const mobile=troqEscapeHTML(document.getElementById("troqShopMobile").value.trim());
- const rows=troqGetItems(),t=troqTotals();
- document.querySelectorAll(".troqMiniBill").forEach(bill=>{
- bill.innerHTML=(troqLogoData?'<img class="miniLogo" alt="" src="'+troqLogoData+'">':"")+
- '<b style="font-family:'+troqFontCSS()+';font-size:15px">'+brand+'</b><i></i>'+
- '<div class="troqMiniTableHead"><span>Product</span><span>Qty</span><span>Price</span><span>Amt</span></div>'+
- rows.map(x=>'<div class="troqMiniTableRow"><span>'+troqEscapeHTML(x.name)+'</span><span>'+x.qty+'</span><span>'+x.price.toFixed(2)+'</span><span>'+(x.qty*x.price).toFixed(2)+'</span></div><i class="troqMiniItemDivider"></i>').join("")+
- '<i></i><small>Subtotal '+troqMoney(t.subtotal)+'</small><small>GST ('+t.rate+'%) '+troqMoney(t.gst)+'</small><div class="miniTotal">TOTAL '+troqMoney(t.total)+'</div><i></i><small>'+address+'</small><small>'+mobile+'</small>';
- });
-}
 function troqBuildReceipt(){
  if(!troqValidateDetails())return false;
- const template=document.querySelector('input[name="troqTemplate"]:checked').value;
  const receipt=document.getElementById("troqReceiptPrintArea");
- receipt.className="template-"+template;
+ receipt.className="template-1";
  receipt.innerHTML=troqReceiptContents();
  return true;
 }
@@ -2085,56 +2060,90 @@ async function troqEscposReceipt(){
  const enc=new TextEncoder(),parts=[];
  const add=(...bytes)=>parts.push(new Uint8Array(bytes));
  const write=text=>parts.push(enc.encode(String(text).replace(/[^\x0A\x0D\x20-\x7E]/g,"?")));
- const width=32, pad=(s,n)=>s.length>=n?s.slice(0,n):s+" ".repeat(n-s.length);
- const center=s=>" ".repeat(Math.max(0,Math.floor((width-s.length)/2)))+s;
- const wrap=(s,n=32)=>{const lines=[];for(const original of s.split(/\r?\n/)){let line="";for(const word of original.split(/\s+/)){if(!word)continue;if(line && line.length+word.length+1>n){lines.push(line);line="";}if(word.length>n){if(line){lines.push(line);line="";}for(let i=0;i<word.length;i+=n)lines.push(word.slice(i,i+n));}else line+=(line?" ":"")+word;}if(line)lines.push(line);}return lines;};
+ const width=32;
+ const clean=s=>String(s).replace(/[^\x20-\x7E]/g,"?");
+ const wrap=(value,n)=>{
+  const lines=[];
+  for(const original of clean(value).split(/\r?\n/)){
+   let line="";
+   for(const word of original.split(/\s+/)){
+    if(!word)continue;
+    if(line && line.length+word.length+1>n){lines.push(line);line="";}
+    if(word.length>n){if(line){lines.push(line);line="";}for(let i=0;i<word.length;i+=n)lines.push(word.slice(i,i+n));}
+    else line+=(line?" ":"")+word;
+   }
+   if(line)lines.push(line);
+  }
+  return lines;
+ };
+ const right=(value,n)=>clean(value).slice(0,n).padStart(n," ");
+ const money=n=>Number(n).toFixed(2);
+ const totalLine=(label,value)=>{
+  const v=money(value),l=clean(label);
+  write(l+" ".repeat(Math.max(1,width-l.length-v.length))+v+"\n");
+ };
  const t=troqTotals(),rows=troqGetItems();
- const template=document.querySelector('input[name="troqTemplate"]:checked')?.value||"1";
- const rule=template==="4"?"================================":template==="5"?"":"--------------------------------";
- const line=()=>{if(rule)write(rule+"\n");};
- const boxed=template==="3";
- const boxLine=(s="")=>write("|"+pad(s,30)+"|\n");
- add(27,64); // initialize
- add(27,97,1); // center
- if(troqLogoData){
-   try{const raster=await troqLogoRaster();if(raster)parts.push(raster);}catch(e){/* continue with brand */}
- }
- if(template==="2"||template==="4")add(27,69,1);
- if(boxed)write("+------------------------------+\n");
- add(27,33,48); // double-width, double-height
- for(const line of wrap(document.getElementById("troqBrandName").value.trim(),16))write(line+"\n");
- add(27,33,0);add(27,69,0);write("\n");add(27,97,0);
- if(boxed)write("+------------------------------+\n");else line();
- // Explicit column widths keep headings and values within 32 printable characters.
- // 32-character receipt: 11 PRODUCT + 4 QTY + 8 PRICE + 9 AMOUNT.
- // Keep product names directly below PRODUCT, never centered over QTY/PRICE.
- if(template==="2")add(27,69,1);
- write(pad("PRODUCT",11)+pad("QTY",4)+pad("PRICE",8)+"AMOUNT"+"\n");
- if(template==="2")add(27,69,0);
- if(boxed)write("+------------------------------+\n");else line();
+ add(27,64);add(27,97,1);
+ if(troqLogoData){try{const raster=await troqLogoRaster();if(raster)parts.push(raster);}catch(e){}}
+ // The selected Google font is rasterized so BLE output matches the font picker.
+ try{const brandRaster=await troqBrandRaster();if(brandRaster)parts.push(brandRaster);}
+ catch(e){add(27,33,48);for(const l of wrap(document.getElementById("troqBrandName").value.trim(),16))write(l+"\n");add(27,33,0);}
+ add(27,97,0);write("--------------------------------\n");
+ // Fixed 32-column table: 10 PRODUCT + 5 QTY + 8 PRICE + 9 AMOUNT.
+ // Every value is right-aligned inside its own heading's exact width.
+ write("PRODUCT".padEnd(10)+right("QTY",5)+right("PRICE",8)+right("AMOUNT",9)+"\n");
+ write("--------------------------------\n");
  for(const x of rows){
-   const nameLines=wrap(x.name,11);
-   const qty=String(x.qty).padStart(4);
-   const price=x.price.toFixed(2).padStart(8);
-   const amount=(x.qty*x.price).toFixed(2).padStart(9);
-   add(27,97,0); // left alignment for every item, including the first one
-   write(pad(nameLines[0]||"",11)+qty+price+amount+"\n");
-   for(const extra of nameLines.slice(1))write(extra+"\n");
-   if(boxed)write("+------------------------------+\n");else line();
+  const names=wrap(x.name,10);
+  write((names.shift()||"").padEnd(10)+right(x.qty,5)+right(money(x.price),8)+right(money(x.qty*x.price),9)+"\n");
+  for(const extra of names)write(extra+"\n");
+  write("................................\n");
  }
- if(template==="2")add(27,69,1);
- write("Subtotal"+t.subtotal.toFixed(2).padStart(24)+"\n");
- const gstLabel="GST ("+t.rate+"%)";
- write(gstLabel+t.gst.toFixed(2).padStart(Math.max(1,32-gstLabel.length))+"\n");
- add(27,69,1);write("TOTAL"+t.total.toFixed(2).padStart(27)+"\n");add(27,69,0);
- if(boxed)write("+------------------------------+\n");else line();
+ totalLine("Subtotal",t.subtotal);
+ totalLine("GST ("+t.rate+"%)",t.gst);
+ add(27,69,1);totalLine("GRAND TOTAL",t.total);add(27,69,0);
+ write("--------------------------------\n");
  add(27,97,1);write("Thank you!\n\n");
- for(const line of wrap(document.getElementById("troqShopAddress").value.trim(),32))write(line+"\n");
- write(document.getElementById("troqShopMobile").value.trim()+"\n\n\n");
+ for(const l of wrap(document.getElementById("troqShopAddress").value.trim(),32))write(l+"\n");
+ write(document.getElementById("troqShopMobile").value.trim()+"\n\n");
  add(27,100,3);
  const len=parts.reduce((n,p)=>n+p.length,0),out=new Uint8Array(len);let offset=0;
  for(const part of parts){out.set(part,offset);offset+=part.length;}
  return out;
+}
+// Print selected brand font as a centered monochrome raster, not a printer-default font.
+async function troqBrandRaster(){
+ const brand=document.getElementById("troqBrandName").value.trim();
+ if(!brand)return null;
+ const font=troqFontSelect.value;
+ if(document.fonts?.load)await document.fonts.load('bold 34px "'+font+'"');
+ const canvas=document.createElement("canvas"),ctx=canvas.getContext("2d",{willReadFrequently:true});
+ const maxW=360,fs=34,lineH=44,lines=[];
+ ctx.font='bold '+fs+'px "'+font+'", sans-serif';
+ let current="";
+ for(const word of brand.split(/\s+/)){
+  const test=current?current+" "+word:word;
+  if(current && ctx.measureText(test).width>maxW){lines.push(current);current=word;}else current=test;
+ }
+ if(current)lines.push(current);
+ canvas.width=384;canvas.height=Math.max(48,lines.length*lineH+12);
+ const c=canvas.getContext("2d",{willReadFrequently:true});
+ c.fillStyle="#fff";c.fillRect(0,0,canvas.width,canvas.height);
+ c.fillStyle="#000";c.font='bold '+fs+'px "'+font+'", sans-serif';c.textAlign="center";c.textBaseline="middle";
+ lines.forEach((line,i)=>c.fillText(line,192,8+i*lineH+lineH/2,360));
+ return troqCanvasRaster(canvas);
+}
+function troqCanvasRaster(canvas){
+ const w=canvas.width,h=canvas.height,ctx=canvas.getContext("2d",{willReadFrequently:true});
+ const pixels=ctx.getImageData(0,0,w,h).data,rowBytes=Math.ceil(w/8),bitmap=new Uint8Array(rowBytes*h);
+ for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+  const k=(y*w+x)*4,brightness=.299*pixels[k]+.587*pixels[k+1]+.114*pixels[k+2];
+  if(brightness<155)bitmap[y*rowBytes+(x>>3)]|=128>>(x&7);
+ }
+ const header=new Uint8Array([29,118,48,0,rowBytes&255,rowBytes>>8,h&255,h>>8]);
+ const result=new Uint8Array(header.length+bitmap.length+1);
+ result.set(header);result.set(bitmap,header.length);result[result.length-1]=10;
+ return result;
 }
 async function troqLogoRaster(){
  const image=new Image();image.src=troqLogoData;
@@ -2182,7 +2191,7 @@ async function troqPrintToSelectedBluetoothPrinter(){
     status.textContent="Direct Bluetooth print failed: "+error.message+". Check printer protocol and connection.";
     troqShowStage(0);
   }finally{
-    next.textContent="Select & Print";
+    next.textContent="Print Bill";
     next.disabled=false;
   }
 }
@@ -2192,9 +2201,8 @@ document.getElementById("troqTestingNext").addEventListener("click",()=>{
   if(troqFlowStage===0){troqShowStage(1);return;}
   if(troqFlowStage===1){
     if(!troqValidateDetails())return;
-    troqUpdateTemplates();troqShowStage(2);return;
+    if(troqBuildReceipt())void troqPrintToSelectedBluetoothPrinter();return;
   }
-  if(troqBuildReceipt())void troqPrintToSelectedBluetoothPrinter();
 });
 const troqOriginalClose=closeTroqSample;
 closeTroqSample=function(){if(troqFlowStage>0){troqShowStage(troqFlowStage-1);return;}troqOriginalClose();};
