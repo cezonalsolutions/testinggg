@@ -759,6 +759,7 @@ body{
     overflow-x:auto;
     overflow-y:hidden;
     padding:0 16px 12px;
+    scroll-padding-inline:16px;
     scroll-snap-type:x mandatory;
     scroll-behavior:smooth;
     -webkit-overflow-scrolling:touch;
@@ -970,22 +971,22 @@ body{
     <section class="troqVideos" aria-label="TROQ videos">
         <div class="troqVideosGrid">
             <div class="troqVideoCard">
-                <video controls playsinline preload="metadata" aria-label="Video 1">
+                <video autoplay muted loop playsinline webkit-playsinline preload="auto" aria-label="Video 1">
                     <source src="video1.mp4" type="video/mp4">
                 </video>
             </div>
             <div class="troqVideoCard">
-                <video controls playsinline preload="metadata" aria-label="Video 2">
+                <video autoplay muted loop playsinline webkit-playsinline preload="auto" aria-label="Video 2">
                     <source src="video1.mp4" type="video/mp4">
                 </video>
             </div>
             <div class="troqVideoCard">
-                <video controls playsinline preload="metadata" aria-label="Video 3">
+                <video autoplay muted loop playsinline webkit-playsinline preload="auto" aria-label="Video 3">
                     <source src="video1.mp4" type="video/mp4">
                 </video>
             </div>
             <div class="troqVideoCard">
-                <video controls playsinline preload="metadata" aria-label="Video 4">
+                <video autoplay muted loop playsinline webkit-playsinline preload="auto" aria-label="Video 4">
                     <source src="video1.mp4" type="video/mp4">
                 </video>
             </div>
@@ -1227,7 +1228,13 @@ function openMainUI(type){
     document.body.style.overflow = "auto";
     document.body.style.background = "#fff";
     window.scrollTo(0,0);
-    if(type === 1) troqStartVideoScroll();
+    if(type === 1){
+        troqStartVideoScroll();
+        troqVideosGrid.querySelectorAll('video').forEach(video => {
+            video.muted = true;
+            video.play().catch(() => {});
+        });
+    }
     else clearInterval(troqVideoTimer);
 }
 
@@ -1537,7 +1544,10 @@ troqVideosGrid.addEventListener('focusin', () => clearInterval(troqVideoTimer));
 troqVideosGrid.addEventListener('focusout', troqStartVideoScroll);
 document.addEventListener('visibilitychange', () => {
     if(document.hidden) clearInterval(troqVideoTimer);
-    else troqStartVideoScroll();
+    else if(document.getElementById('mainUI1').classList.contains('active')){
+        troqStartVideoScroll();
+        troqVideosGrid.querySelectorAll('video').forEach(video => video.play().catch(() => {}));
+    }
 });
 
 /* DRAG SLIDER */
