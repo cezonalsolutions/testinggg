@@ -22,7 +22,8 @@ content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable
     box-sizing:border-box;
 }
 
-html,body{
+html,
+body{
     width:100%;
     height:100%;
     overflow:hidden;
@@ -38,7 +39,6 @@ body{
 
 .loginScreen{
     position:relative;
-
     width:100%;
     height:100vh;
     height:100dvh;
@@ -47,7 +47,6 @@ body{
     flex-direction:column;
 
     overflow:hidden;
-
     background:#ff2380;
 }
 
@@ -55,24 +54,21 @@ body{
 
 .loginHero{
     position:relative;
-
     width:100%;
 
     flex:1 1 0;
     min-height:0;
 
     overflow:hidden;
-
     background:#ff2380;
 
-    transition:flex .35s ease,opacity .25s ease;
+    transition:flex .35s ease;
 }
 
-/* TEXT */
+/* SIMPLE AND SECURE */
 
 .handText{
     position:absolute;
-
     top:12%;
     left:0;
 
@@ -89,18 +85,17 @@ body{
     color:white;
 }
 
+/* BILLING SOFTWARE */
+
 .billingText{
     position:absolute;
-
     top:calc(12% + 52px);
     left:0;
 
     width:100%;
-
     text-align:center;
 
     font-family:'Outfit',sans-serif;
-
     font-size:clamp(14px,3.5vw,19px);
     font-weight:400;
 
@@ -108,6 +103,41 @@ body{
     text-transform:uppercase;
 
     color:rgba(255,255,255,.85);
+}
+
+/* SKIP BUTTON */
+
+.skipButton{
+    position:absolute;
+
+    top:22px;
+    right:22px;
+
+    z-index:20;
+
+    padding:8px 17px;
+
+    border:1px solid rgba(255,255,255,.45);
+    border-radius:30px;
+
+    background:rgba(255,255,255,.15);
+
+    color:white;
+
+    font-family:'Outfit',sans-serif;
+    font-size:15px;
+    font-weight:500;
+
+    cursor:pointer;
+
+    backdrop-filter:blur(8px);
+    -webkit-backdrop-filter:blur(8px);
+
+    transition:background .2s ease;
+}
+
+.skipButton:active{
+    background:rgba(255,255,255,.3);
 }
 
 /* IMAGE */
@@ -126,17 +156,17 @@ body{
 
     object-fit:contain;
     object-position:bottom;
+
+    transition:opacity .2s ease;
 }
 
 /* LOGIN SHEET */
 
 .loginPanel{
     position:relative;
-
     z-index:10;
 
     width:100%;
-
     flex:0 0 auto;
 
     background:white;
@@ -162,7 +192,7 @@ body{
     color:#242424;
 }
 
-/* INPUT BOX */
+/* MOBILE INPUT */
 
 .phoneBox{
     display:flex;
@@ -177,11 +207,12 @@ body{
     border-radius:19px;
 
     padding:0 20px;
-
     background:white;
 }
 
 .countryCode{
+    font-family:'Outfit',sans-serif;
+
     font-size:20px;
     font-weight:500;
     color:#444;
@@ -201,11 +232,10 @@ body{
 
     border:none;
     outline:none;
-
     background:transparent;
 
-    font-family:'Poppins',sans-serif;
-    font-size:18px;
+    font-family:'Outfit',sans-serif;
+    font-size:19px;
     font-weight:400;
 
     color:#333;
@@ -225,6 +255,50 @@ body{
     display:flex;
 }
 
+/* MOBILE NUMBER DISPLAY */
+
+.mobileDisplay{
+    display:none;
+
+    align-items:center;
+    justify-content:space-between;
+
+    width:100%;
+
+    margin-top:12px;
+    padding:0 2px;
+
+    font-family:'Outfit',sans-serif;
+}
+
+.mobileDisplay.show{
+    display:flex;
+}
+
+.mobileNumberText{
+    font-family:'Outfit',sans-serif;
+
+    font-size:16px;
+    font-weight:400;
+
+    color:#666;
+    letter-spacing:.2px;
+}
+
+.editMobile{
+    border:none;
+    background:transparent;
+
+    font-family:'Outfit',sans-serif;
+
+    font-size:15px;
+    font-weight:500;
+
+    color:#ff2380;
+
+    cursor:pointer;
+}
+
 /* BUTTON */
 
 .proceedButton{
@@ -240,6 +314,7 @@ body{
     color:#aaa;
 
     font-family:'Poppins',sans-serif;
+
     font-size:20px;
     font-weight:500;
 
@@ -263,7 +338,6 @@ body{
 
     font-size:11px;
     line-height:1.6;
-
     color:#777;
 }
 
@@ -273,29 +347,23 @@ body{
     font-weight:500;
 }
 
-/* KEYBOARD OPEN — SHEET ONLY MIDDLE */
+/* KEYBOARD OPEN */
 
 .loginScreen.keyboardOpen .loginHero{
-
     flex:0 0 38%;
-
 }
 
 .loginScreen.keyboardOpen .productImage{
-
     opacity:0;
     visibility:hidden;
-
 }
 
 .loginScreen.keyboardOpen .loginPanel{
-
     flex:1 1 auto;
 
     border-radius:32px 32px 0 0;
 
     padding-top:35px;
-
 }
 
 /* MOBILE */
@@ -316,6 +384,14 @@ body{
         width:90%;
     }
 
+    .skipButton{
+        top:20px;
+        right:20px;
+
+        font-size:14px;
+        padding:7px 16px;
+    }
+
     .loginPanel{
         padding:30px 25px 24px;
     }
@@ -334,7 +410,7 @@ body{
     }
 
     .phoneBox input{
-        font-size:16px;
+        font-size:18px;
     }
 
     .proceedButton{
@@ -385,6 +461,16 @@ body{
 
     <div class="loginHero">
 
+        <!-- SKIP BUTTON -->
+
+       <button
+    class="skipButton"
+    id="skipButton"
+    type="button"
+>
+    Skip
+</button>
+
         <div class="handText">
             Simple and Secure
         </div>
@@ -409,7 +495,7 @@ body{
             Login with mobile number
         </div>
 
-        <!-- MOBILE -->
+        <!-- ENTER MOBILE -->
 
         <div class="phoneBox" id="mobileBox">
 
@@ -428,7 +514,7 @@ body{
 
         </div>
 
-        <!-- PASSWORD -->
+        <!-- ENTER PASSWORD -->
 
         <div class="phoneBox passwordBox" id="passwordBox">
 
@@ -438,6 +524,27 @@ body{
                 placeholder="Enter Password"
                 autocomplete="current-password"
             >
+
+        </div>
+
+        <!-- MOBILE NUMBER DISPLAY -->
+
+        <div class="mobileDisplay" id="mobileDisplay">
+
+            <span
+                class="mobileNumberText"
+                id="mobileNumberText"
+            >
+                +91
+            </span>
+
+            <button
+                class="editMobile"
+                id="editMobile"
+                type="button"
+            >
+                Edit
+            </button>
 
         </div>
 
@@ -477,19 +584,38 @@ body{
 
 /* ELEMENTS */
 
-const screen = document.getElementById("loginScreen");
+const screen =
+document.getElementById("loginScreen");
 
-const mobileInput = document.getElementById("mobileInput");
+const mobileInput =
+document.getElementById("mobileInput");
 
-const passwordInput = document.getElementById("passwordInput");
+const passwordInput =
+document.getElementById("passwordInput");
 
-const mobileBox = document.getElementById("mobileBox");
+const mobileBox =
+document.getElementById("mobileBox");
 
-const passwordBox = document.getElementById("passwordBox");
+const passwordBox =
+document.getElementById("passwordBox");
 
-const loginTitle = document.getElementById("loginTitle");
+const mobileDisplay =
+document.getElementById("mobileDisplay");
 
-const button = document.getElementById("proceedButton");
+const mobileNumberText =
+document.getElementById("mobileNumberText");
+
+const editMobile =
+document.getElementById("editMobile");
+
+const loginTitle =
+document.getElementById("loginTitle");
+
+const button =
+document.getElementById("proceedButton");
+
+const skipButton =
+document.getElementById("skipButton");
 
 let step = "mobile";
 
@@ -501,11 +627,13 @@ function updateButton(){
 
     if(step === "mobile"){
 
-        valid = /^[0-9]{10}$/.test(mobileInput.value);
+        valid =
+        /^[0-9]{10}$/.test(mobileInput.value);
 
     }else{
 
-        valid = passwordInput.value.length > 0;
+        valid =
+        passwordInput.value.length > 0;
 
     }
 
@@ -515,22 +643,27 @@ function updateButton(){
 
 }
 
-/* MOBILE NUMBER */
+/* MOBILE INPUT */
 
 mobileInput.addEventListener("input",()=>{
 
     mobileInput.value =
-        mobileInput.value.replace(/\D/g,"").slice(0,10);
+    mobileInput.value
+    .replace(/\D/g,"")
+    .slice(0,10);
 
     updateButton();
 
 });
 
-/* PASSWORD */
+/* PASSWORD INPUT */
 
-passwordInput.addEventListener("input",updateButton);
+passwordInput.addEventListener(
+    "input",
+    updateButton
+);
 
-/* KEYBOARD OPEN */
+/* SHEET */
 
 function openSheet(){
 
@@ -544,11 +677,17 @@ function closeSheet(){
 
 }
 
-mobileInput.addEventListener("focus",openSheet);
+mobileInput.addEventListener(
+    "focus",
+    openSheet
+);
 
-passwordInput.addEventListener("focus",openSheet);
+passwordInput.addEventListener(
+    "focus",
+    openSheet
+);
 
-/* BUTTON CLICK */
+/* PROCEED / LOGIN */
 
 button.addEventListener("click",()=>{
 
@@ -558,7 +697,13 @@ button.addEventListener("click",()=>{
 
         step = "password";
 
-        loginTitle.textContent = "Enter your password";
+        mobileNumberText.textContent =
+        "+91 " + mobileInput.value;
+
+        mobileDisplay.classList.add("show");
+
+        loginTitle.textContent =
+        "Enter your password";
 
         mobileBox.style.display = "none";
 
@@ -579,6 +724,41 @@ button.addEventListener("click",()=>{
         alert("Login clicked");
 
     }
+
+});
+
+/* EDIT MOBILE */
+
+editMobile.addEventListener("click",()=>{
+
+    step = "mobile";
+
+    loginTitle.textContent =
+    "Login with mobile number";
+
+    mobileBox.style.display = "flex";
+
+    passwordBox.classList.remove("show");
+
+    mobileDisplay.classList.remove("show");
+
+    passwordInput.value = "";
+
+    button.textContent = "Proceed";
+
+    updateButton();
+
+    openSheet();
+
+    mobileInput.focus();
+
+});
+
+/* SKIP BUTTON */
+
+skipButton.addEventListener("click",()=>{
+
+    window.location.href = "home.html";
 
 });
 
