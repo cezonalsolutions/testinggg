@@ -10,7 +10,7 @@ content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable
 
 <title>Login</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
 
 <style>
 
@@ -22,8 +22,7 @@ content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable
     box-sizing:border-box;
 }
 
-html,
-body{
+html,body{
     width:100%;
     height:100%;
     overflow:hidden;
@@ -52,7 +51,7 @@ body{
     background:#ff2380;
 }
 
-/* HERO SECTION */
+/* HERO */
 
 .loginHero{
     position:relative;
@@ -62,12 +61,14 @@ body{
     flex:1 1 0;
     min-height:0;
 
+    overflow:hidden;
+
     background:#ff2380;
 
-    overflow:hidden;
+    transition:flex .35s ease,opacity .25s ease;
 }
 
-/* SIMPLE AND SECURE */
+/* TEXT */
 
 .handText{
     position:absolute;
@@ -81,21 +82,12 @@ body{
     text-align:center;
 
     font-family:'Outfit',sans-serif;
-    font-style:normal;
-
     font-size:clamp(28px,7vw,46px);
     font-weight:400;
 
-    letter-spacing:-0.8px;
-
+    letter-spacing:-.8px;
     color:white;
-
-    transform:none;
-
-    z-index:2;
 }
-
-/* BILLING SOFTWARE */
 
 .billingText{
     position:absolute;
@@ -113,22 +105,18 @@ body{
     font-weight:400;
 
     letter-spacing:3px;
-
     text-transform:uppercase;
 
     color:rgba(255,255,255,.85);
-
-    z-index:2;
 }
 
-/* PRODUCT IMAGE */
+/* IMAGE */
 
 .productImage{
     position:absolute;
 
     width:85%;
     max-width:420px;
-
     height:52%;
 
     left:50%;
@@ -138,11 +126,9 @@ body{
 
     object-fit:contain;
     object-position:bottom;
-
-    z-index:3;
 }
 
-/* LOGIN PANEL */
+/* LOGIN SHEET */
 
 .loginPanel{
     position:relative;
@@ -158,20 +144,25 @@ body{
     border-radius:38px 38px 0 0;
 
     padding:30px 25px 25px;
+
+    transition:padding .3s ease;
 }
 
-/* LOGIN TITLE — NEW FONT */
+/* TITLE */
 
 .loginTitle{
     font-family:'Outfit',sans-serif;
+
     font-size:25px;
     font-weight:500;
-    letter-spacing:-0.6px;
+
+    letter-spacing:-.6px;
     line-height:1.3;
+
     color:#242424;
 }
 
-/* MOBILE INPUT */
+/* INPUT BOX */
 
 .phoneBox{
     display:flex;
@@ -193,7 +184,6 @@ body{
 .countryCode{
     font-size:20px;
     font-weight:500;
-
     color:#444;
 
     padding-right:15px;
@@ -215,7 +205,6 @@ body{
     background:transparent;
 
     font-family:'Poppins',sans-serif;
-
     font-size:18px;
     font-weight:400;
 
@@ -226,7 +215,17 @@ body{
     color:#999;
 }
 
-/* PROCEED BUTTON */
+/* PASSWORD */
+
+.passwordBox{
+    display:none;
+}
+
+.passwordBox.show{
+    display:flex;
+}
+
+/* BUTTON */
 
 .proceedButton{
     width:100%;
@@ -234,17 +233,24 @@ body{
 
     margin-top:22px;
 
-    border:1.5px solid #e5e5e5;
+    border:none;
     border-radius:50px;
 
-    background:#fcfcfc;
-    color:#999;
+    background:#f1f1f1;
+    color:#aaa;
 
     font-family:'Poppins',sans-serif;
-
     font-size:20px;
     font-weight:500;
 
+    cursor:not-allowed;
+
+    transition:background .25s,color .25s;
+}
+
+.proceedButton.active{
+    background:#ff2380;
+    color:white;
     cursor:pointer;
 }
 
@@ -267,12 +273,36 @@ body{
     font-weight:500;
 }
 
+/* KEYBOARD OPEN — SHEET ONLY MIDDLE */
+
+.loginScreen.keyboardOpen .loginHero{
+
+    flex:0 0 38%;
+
+}
+
+.loginScreen.keyboardOpen .productImage{
+
+    opacity:0;
+    visibility:hidden;
+
+}
+
+.loginScreen.keyboardOpen .loginPanel{
+
+    flex:1 1 auto;
+
+    border-radius:32px 32px 0 0;
+
+    padding-top:35px;
+
+}
+
 /* MOBILE */
 
 @media(max-width:480px){
 
     .handText{
-        top:12%;
         font-size:clamp(28px,7vw,38px);
     }
 
@@ -284,7 +314,6 @@ body{
 
     .productImage{
         width:90%;
-        height:52%;
     }
 
     .loginPanel{
@@ -293,7 +322,6 @@ body{
 
     .loginTitle{
         font-size:23px;
-        font-weight:500;
     }
 
     .phoneBox{
@@ -321,21 +349,9 @@ body{
 
 }
 
-/* SHORT HEIGHT DEVICES */
+/* SHORT HEIGHT */
 
 @media(max-height:700px){
-
-    .handText{
-        top:8%;
-    }
-
-    .billingText{
-        top:calc(8% + 44px);
-    }
-
-    .productImage{
-        height:48%;
-    }
 
     .loginPanel{
         padding-top:20px;
@@ -359,12 +375,11 @@ body{
 }
 
 </style>
-
 </head>
 
 <body>
 
-<div class="loginScreen">
+<div class="loginScreen" id="loginScreen">
 
     <!-- HERO -->
 
@@ -378,8 +393,6 @@ body{
             Billing Software
         </div>
 
-        <!-- PRODUCT IMAGE -->
-
         <img
             src="torq.png"
             class="productImage"
@@ -388,23 +401,24 @@ body{
 
     </div>
 
-    <!-- LOGIN PANEL -->
+    <!-- LOGIN SHEET -->
 
     <div class="loginPanel">
 
-        <div class="loginTitle">
+        <div class="loginTitle" id="loginTitle">
             Login with mobile number
         </div>
 
-        <!-- PHONE NUMBER -->
+        <!-- MOBILE -->
 
-        <div class="phoneBox">
+        <div class="phoneBox" id="mobileBox">
 
             <span class="countryCode">
                 +91
             </span>
 
             <input
+                id="mobileInput"
                 type="tel"
                 placeholder="Enter Mobile Number"
                 maxlength="10"
@@ -414,9 +428,26 @@ body{
 
         </div>
 
-        <!-- PROCEED -->
+        <!-- PASSWORD -->
 
-        <button class="proceedButton">
+        <div class="phoneBox passwordBox" id="passwordBox">
+
+            <input
+                id="passwordInput"
+                type="password"
+                placeholder="Enter Password"
+                autocomplete="current-password"
+            >
+
+        </div>
+
+        <!-- BUTTON -->
+
+        <button
+            class="proceedButton"
+            id="proceedButton"
+            disabled
+        >
             Proceed
         </button>
 
@@ -441,6 +472,140 @@ body{
     </div>
 
 </div>
+
+<script>
+
+/* ELEMENTS */
+
+const screen = document.getElementById("loginScreen");
+
+const mobileInput = document.getElementById("mobileInput");
+
+const passwordInput = document.getElementById("passwordInput");
+
+const mobileBox = document.getElementById("mobileBox");
+
+const passwordBox = document.getElementById("passwordBox");
+
+const loginTitle = document.getElementById("loginTitle");
+
+const button = document.getElementById("proceedButton");
+
+let step = "mobile";
+
+/* BUTTON STATE */
+
+function updateButton(){
+
+    let valid = false;
+
+    if(step === "mobile"){
+
+        valid = /^[0-9]{10}$/.test(mobileInput.value);
+
+    }else{
+
+        valid = passwordInput.value.length > 0;
+
+    }
+
+    button.disabled = !valid;
+
+    button.classList.toggle("active",valid);
+
+}
+
+/* MOBILE NUMBER */
+
+mobileInput.addEventListener("input",()=>{
+
+    mobileInput.value =
+        mobileInput.value.replace(/\D/g,"").slice(0,10);
+
+    updateButton();
+
+});
+
+/* PASSWORD */
+
+passwordInput.addEventListener("input",updateButton);
+
+/* KEYBOARD OPEN */
+
+function openSheet(){
+
+    screen.classList.add("keyboardOpen");
+
+}
+
+function closeSheet(){
+
+    screen.classList.remove("keyboardOpen");
+
+}
+
+mobileInput.addEventListener("focus",openSheet);
+
+passwordInput.addEventListener("focus",openSheet);
+
+/* BUTTON CLICK */
+
+button.addEventListener("click",()=>{
+
+    if(button.disabled)return;
+
+    if(step === "mobile"){
+
+        step = "password";
+
+        loginTitle.textContent = "Enter your password";
+
+        mobileBox.style.display = "none";
+
+        passwordBox.classList.add("show");
+
+        button.textContent = "Login";
+
+        updateButton();
+
+        openSheet();
+
+        passwordInput.focus();
+
+    }else{
+
+        /* CONNECT LOGIN API HERE */
+
+        alert("Login clicked");
+
+    }
+
+});
+
+/* KEYBOARD CLOSE */
+
+document.addEventListener("focusout",()=>{
+
+    setTimeout(()=>{
+
+        if(
+            document.activeElement !== mobileInput &&
+            document.activeElement !== passwordInput
+        ){
+
+            closeSheet();
+
+        }
+
+    },150);
+
+});
+
+/* INITIAL */
+
+updateButton();
+
+</script>
 
 </body>
 </html>
