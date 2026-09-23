@@ -511,6 +511,10 @@ body{
 
 }
 
+/* MAIN UI SECTIONS */
+.mainUI{display:none;min-height:100dvh;background:#fff;color:#242424;font-family:'Outfit',sans-serif;}
+.mainUI.active{display:block;}
+.mainUI .mainPlaceholder{padding:30px 24px;}
 </style>
 </head>
 
@@ -653,6 +657,18 @@ body{
 
 </div>
 
+<!-- MAIN UI 1: SKIP / GUEST -->
+<div id="mainUI1" class="mainUI">
+    <!-- BRO: PASTE YOUR MAIN UI 1 CONTENT HERE -->
+    <div class="mainPlaceholder"><h1>Main UI 1</h1></div>
+</div>
+
+<!-- MAIN UI 2: LOGGED-IN USER -->
+<div id="mainUI2" class="mainUI">
+    <!-- BRO: PASTE YOUR MAIN UI 2 CONTENT HERE -->
+    <div class="mainPlaceholder"><h1>Main UI 2</h1></div>
+</div>
+
 <script>
 
 /* TEST ACCOUNT */
@@ -662,8 +678,7 @@ const TEST_PASSWORD = "123456";
 
 /* MAIN UI PAGES */
 
-const GUEST_PAGE = "main1.html";
-const USER_PAGE = "main2.html";
+/* Both main UIs are inside this same HTML file. */
 
 /* ELEMENTS */
 
@@ -706,6 +721,19 @@ document.getElementById("loginError");
 let step = "mobile";
 
 let errorTimer = null;
+
+/* SWITCH SCREENS WITHOUT OPENING ANOTHER HTML FILE */
+function openMainUI(type){
+    document.activeElement?.blur();
+    screen.classList.remove("keyboardOpen");
+    screen.style.display = "none";
+    document.getElementById("mainUI1").classList.toggle("active",type === 1);
+    document.getElementById("mainUI2").classList.toggle("active",type === 2);
+    document.documentElement.style.overflow = "auto";
+    document.body.style.overflow = "auto";
+    document.body.style.background = "#fff";
+    window.scrollTo(0,0);
+}
 
 /* BUTTON STATE */
 
@@ -879,7 +907,7 @@ button.addEventListener("click",()=>{
                 enteredMobile
             );
 
-            window.location.href = USER_PAGE;
+            openMainUI(2);
 
         }
 
@@ -946,7 +974,7 @@ skipButton.addEventListener("click",()=>{
 
     sessionStorage.removeItem("troqMobile");
 
-    window.location.href = GUEST_PAGE;
+    openMainUI(1);
 
 });
 
