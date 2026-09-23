@@ -866,6 +866,48 @@ body{
 .troqTestingFooter{flex:none;padding:12px 20px calc(14px + env(safe-area-inset-bottom));background:#fff;border-top:1px solid #f3f3f3}
 .troqTestingNext{display:block;width:100%;max-width:440px;height:56px;margin:0 auto;border:0;border-radius:16px;background:#ff2380;color:#fff;font:600 18px 'Outfit',sans-serif;cursor:pointer}
 .troqTestingNext:disabled{background:#f6bfd7;color:#fff;cursor:not-allowed;opacity:1}
+
+/* TESTING FLOW: BRAND DETAILS + FIVE RECEIPT TEMPLATES */
+.troqFlowPage[hidden]{display:none!important}
+.troqFlowPage{width:100%;max-width:440px;margin:0 auto}
+.troqFlowTitle{font:600 23px 'Outfit',sans-serif;color:#222;margin:5px 0 20px}
+.troqFlowLabel{display:block;font:500 15px 'Outfit',sans-serif;color:#333;margin:17px 0 7px}
+.troqFlowInput{width:100%;height:53px;border:1px solid #ddd;border-radius:12px;padding:0 14px;font:400 16px 'Outfit',sans-serif;outline-color:#ff2380;background:#fff}
+.troqLogoInput{width:100%;border:1px dashed #ff8bb9;border-radius:12px;padding:15px;font:400 14px 'Outfit',sans-serif}
+.troqLogoPreview{display:block;max-width:110px;max-height:90px;object-fit:contain;margin:10px 0}
+.troqLogoPreview[hidden]{display:none!important}
+.troqItemRow{display:grid;grid-template-columns:minmax(0,1fr) 60px 80px 34px;gap:6px;margin:8px 0}
+.troqItemRow input{width:100%;min-width:0;height:46px;border:1px solid #ddd;border-radius:9px;padding:0 8px;font:400 14px 'Outfit',sans-serif}
+.troqItemRow button{border:0;border-radius:9px;background:#ffe5f0;color:#ff2380;font-size:23px}
+.troqAddItem{border:1px solid #ff2380;background:#fff;color:#ff2380;padding:12px 16px;border-radius:12px;font:600 15px 'Outfit',sans-serif;margin:10px 0 20px}
+.troqTemplateGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;padding-bottom:20px}
+.troqTemplateCard{display:block;cursor:pointer;border:2px solid #eaeaea;border-radius:15px;padding:12px;background:#fff;font:500 15px 'Outfit',sans-serif;color:#222}
+.troqTemplateCard:has(input:checked){border-color:#ff2380;background:#fff6fa}
+.troqTemplateCard input{accent-color:#ff2380;margin-right:5px}
+.troqMiniBill{height:145px;overflow:hidden;margin:10px auto 0;max-width:125px;background:#fff;border:1px solid #ddd;padding:10px 7px;color:#333;font:10px monospace;text-align:center;box-shadow:0 3px 8px #0001}
+.troqMiniBill b{display:block;font-size:12px;margin-bottom:10px}.troqMiniBill i{display:block;border-top:1px dashed #777;margin:10px 0}
+.troqMiniBill em{display:block;text-align:left;font-style:normal;margin:6px 0}
+.troqMiniBill.t2{border-top:6px solid #222}.troqMiniBill.t3{border:2px solid #222}.troqMiniBill.t4{border-top:6px double #222}.troqMiniBill.t5{border-left:6px solid #222}
+.troqTestingHeader{justify-content:flex-start;gap:12px}.troqTestingTitle{font:600 19px 'Outfit',sans-serif}
+#troqReceiptPrintArea{display:none}
+@media print{
+ @page{size:80mm auto;margin:0}
+ html,body{width:80mm!important;height:auto!important;overflow:visible!important;background:#fff!important}
+ body *{visibility:hidden!important}
+ #troqReceiptPrintArea,#troqReceiptPrintArea *{visibility:visible!important}
+ #troqReceiptPrintArea{display:block!important;position:absolute!important;top:0;left:0;width:80mm;padding:4mm;font:12px monospace;color:#000;background:#fff}
+ #troqReceiptPrintArea .troqPrintLogo{display:block;max-width:24mm;max-height:22mm;object-fit:contain;margin:0 auto 7px}
+ #troqReceiptPrintArea .troqPrintName{text-align:center;font-weight:bold;font-size:18px;overflow-wrap:anywhere}
+ #troqReceiptPrintArea .troqPrintProduct{text-align:center;margin:5px 0}
+ #troqReceiptPrintArea .troqPrintLine{border-top:1px dashed #111;margin:9px 0}
+ #troqReceiptPrintArea .troqPrintRow{display:flex;justify-content:space-between;gap:6px;margin:5px 0}
+ #troqReceiptPrintArea .troqPrintTotal{font-weight:bold;font-size:15px}
+ #troqReceiptPrintArea .troqPrintThanks{text-align:center;margin-top:14px}
+ #troqReceiptPrintArea.template-2{border-top:4px solid #111}
+ #troqReceiptPrintArea.template-3{border:2px solid #111}
+ #troqReceiptPrintArea.template-4 .troqPrintLine{border-top:3px double #111}
+ #troqReceiptPrintArea.template-5 .troqPrintName{text-align:left}
+}
 </style>
 </head>
 
@@ -1120,9 +1162,10 @@ body{
     <button type="button" class="troqSheetDown" onclick="closeTroqSample()" aria-label="Close sheet">
       <i class="fa-solid fa-chevron-down"></i>
     </button>
-    <span class="troqTestingTitle">Testing</span>
+    <span class="troqTestingTitle" id="troqFlowHeader">Testing</span>
   </div>
   <div class="troqSheetBody troqTestingBody">
+    <div class="troqFlowPage" id="troqFlowBluetooth">
     <button type="button" class="troqBluetoothButton" id="troqBluetoothButton" style="margin-top:0">
       <i class="fa-brands fa-bluetooth-b"></i>
       <span>Connect to Bluetooth</span>
@@ -1137,17 +1180,41 @@ body{
       <div class="troqBluetoothStep">
         <h3>Step 1: Turn on Bluetooth</h3>
         <p>Open Settings → Bluetooth → Turn on Bluetooth.</p>
-        <img src="test/1.jpeg" alt="Turn on Bluetooth in Settings" loading="lazy">
+        <img src="step1.webp" alt="Turn on Bluetooth in Settings" loading="lazy">
       </div>
       <div class="troqBluetoothStep">
         <h3>Step 2: Turn on your printer</h3>
         <p>Turn on your printer and keep it nearby.</p>
-        <img src="test/2.jpeg" alt="Turn on the printer" loading="lazy">
+        <img src="step2.webp" alt="Turn on the printer" loading="lazy">
       </div>
       <div class="troqBluetoothStep">
         <h3>Step 3: Connect your printer</h3>
         <p>Tap Connect to Bluetooth and select your printer.</p>
-        <img src="test/3.jpeg" alt="Select your printer to connect" loading="lazy">
+        <img src="step3.webp" alt="Select your printer to connect" loading="lazy">
+      </div>
+    </div>
+    </div>
+    <div class="troqFlowPage" id="troqFlowDetails" hidden>
+      <h2 class="troqFlowTitle">Your bill details</h2>
+      <label class="troqFlowLabel" for="troqBrandName">Brand name</label>
+      <input class="troqFlowInput" id="troqBrandName" placeholder="Enter your brand name" maxlength="80">
+      <label class="troqFlowLabel" for="troqBrandLogo">Upload logo (optional)</label>
+      <input class="troqLogoInput" id="troqBrandLogo" type="file" accept="image/png,image/jpeg,image/webp">
+      <img class="troqLogoPreview" id="troqLogoPreview" alt="Logo preview" hidden>
+      <label class="troqFlowLabel" for="troqProductName">Product name</label>
+      <input class="troqFlowInput" id="troqProductName" placeholder="Enter product name" maxlength="100">
+      <label class="troqFlowLabel">Bill items</label>
+      <div id="troqBillItems"></div>
+      <button type="button" class="troqAddItem" id="troqAddItem">+ Add item</button>
+    </div>
+    <div class="troqFlowPage" id="troqFlowTemplates" hidden>
+      <h2 class="troqFlowTitle">Choose a bill template</h2>
+      <div class="troqTemplateGrid">
+        <label class="troqTemplateCard"><input type="radio" name="troqTemplate" value="1" checked> Classic<div class="troqMiniBill"><b>YOUR BRAND</b><i></i><em>Item       100</em><em>Item        50</em><i></i><b>TOTAL 150</b></div></label>
+        <label class="troqTemplateCard"><input type="radio" name="troqTemplate" value="2"> Bold<div class="troqMiniBill t2"><b>YOUR BRAND</b><i></i><em>Item       100</em><em>Item        50</em><i></i><b>TOTAL 150</b></div></label>
+        <label class="troqTemplateCard"><input type="radio" name="troqTemplate" value="3"> Boxed<div class="troqMiniBill t3"><b>YOUR BRAND</b><i></i><em>Item       100</em><em>Item        50</em><i></i><b>TOTAL 150</b></div></label>
+        <label class="troqTemplateCard"><input type="radio" name="troqTemplate" value="4"> Double line<div class="troqMiniBill t4"><b>YOUR BRAND</b><i></i><em>Item       100</em><em>Item        50</em><i></i><b>TOTAL 150</b></div></label>
+        <label class="troqTemplateCard"><input type="radio" name="troqTemplate" value="5"> Minimal<div class="troqMiniBill t5"><b>YOUR BRAND</b><i></i><em>Item       100</em><em>Item        50</em><i></i><b>TOTAL 150</b></div></label>
       </div>
     </div>
   </div>
@@ -1155,7 +1222,7 @@ body{
     <button type="button" class="troqTestingNext" id="troqTestingNext" disabled>Next</button>
   </div>
 </section>
-
+<div id="troqReceiptPrintArea" aria-hidden="true"></div>
 
 <script>
 
@@ -1744,11 +1811,72 @@ document.getElementById("troqBluetoothButton").addEventListener("click",async()=
   }
 });
 
-/* NEXT: READY FOR THE NEXT TESTING SCREEN */
-document.getElementById("troqTestingNext").addEventListener("click",()=>{
-  if(document.getElementById("troqTestingNext").disabled) return;
-  // Add the next testing screen here when its design is ready.
+/* NEXT: BLUETOOTH → BILL DETAILS → FIVE TEMPLATES → PRINT */
+let troqFlowStage=0;
+let troqLogoData="";
+const troqFlowPages=["troqFlowBluetooth","troqFlowDetails","troqFlowTemplates"];
+function troqShowStage(stage){
+  troqFlowStage=stage;
+  troqFlowPages.forEach((id,i)=>document.getElementById(id).hidden=i!==stage);
+  document.getElementById("troqFlowHeader").textContent=["Testing","Bill Details","Select Template"][stage];
+  const next=document.getElementById("troqTestingNext");
+  next.textContent=stage===2?"Select & Print":"Next";
+  next.disabled=stage===0?!document.getElementById("troqConnectedDevice").hidden:false;
+  document.querySelector(".troqTestingBody").scrollTop=0;
+}
+function troqAddBillRow(name="",qty="1",price=""){
+  const row=document.createElement("div");row.className="troqItemRow";
+  row.innerHTML='<input aria-label="Item name" placeholder="Item name" class="troqItemName"><input aria-label="Quantity" type="number" min="1" step="1" placeholder="Qty" class="troqItemQty"><input aria-label="Price" type="number" min="0" step="0.01" placeholder="₹ Price" class="troqItemPrice"><button type="button" aria-label="Remove item">×</button>';
+  row.querySelector(".troqItemName").value=name;
+  row.querySelector(".troqItemQty").value=qty;
+  row.querySelector(".troqItemPrice").value=price;
+  row.querySelector("button").onclick=()=>row.remove();
+  document.getElementById("troqBillItems").appendChild(row);
+}
+troqAddBillRow();
+document.getElementById("troqAddItem").onclick=()=>troqAddBillRow();
+document.getElementById("troqBrandLogo").addEventListener("change",e=>{
+  const file=e.target.files?.[0];if(!file)return;
+  if(!["image/png","image/jpeg","image/webp"].includes(file.type)||file.size>2*1024*1024){alert("Choose a PNG, JPG or WebP logo under 2 MB.");e.target.value="";return;}
+  const reader=new FileReader();reader.onload=()=>{
+    troqLogoData=reader.result;
+    const preview=document.getElementById("troqLogoPreview");preview.src=troqLogoData;preview.hidden=false;
+  };reader.readAsDataURL(file);
 });
+function troqEscapeHTML(value){return String(value).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function troqBuildReceipt(){
+  const brand=document.getElementById("troqBrandName").value.trim();
+  const product=document.getElementById("troqProductName").value.trim();
+  if(!brand||!product){alert("Enter brand name and product name.");troqShowStage(1);return false;}
+  const rows=[...document.querySelectorAll(".troqItemRow")].map(row=>({
+    name:row.querySelector(".troqItemName").value.trim(),
+    qty:Number(row.querySelector(".troqItemQty").value),
+    price:Number(row.querySelector(".troqItemPrice").value)
+  })).filter(x=>x.name&&Number.isFinite(x.qty)&&x.qty>0&&Number.isInteger(x.qty)&&Number.isFinite(x.price)&&x.price>=0);
+  if(!rows.length){alert("Add at least one item with a valid quantity and price.");troqShowStage(1);return false;}
+  const template=document.querySelector('input[name="troqTemplate"]:checked').value;
+  const receipt=document.getElementById("troqReceiptPrintArea");
+  receipt.className="template-"+template;
+  const money=n=>"₹"+n.toFixed(2);
+  receipt.innerHTML=(troqLogoData?'<img class="troqPrintLogo" alt="" src="'+troqLogoData+'">':"")+
+    '<div class="troqPrintName">'+troqEscapeHTML(brand)+'</div><div class="troqPrintProduct">'+troqEscapeHTML(product)+'</div><div class="troqPrintLine"></div>'+
+    rows.map(x=>'<div class="troqPrintRow"><span>'+troqEscapeHTML(x.name)+' × '+x.qty+'</span><span>'+money(x.qty*x.price)+'</span></div>').join("")+
+    '<div class="troqPrintLine"></div><div class="troqPrintRow troqPrintTotal"><span>TOTAL</span><span>'+money(rows.reduce((sum,x)=>sum+x.qty*x.price,0))+'</span></div><div class="troqPrintThanks">Thank you!<br>Powered by TROQ</div>';
+  return true;
+}
+document.getElementById("troqTestingNext").addEventListener("click",()=>{
+  if(document.getElementById("troqTestingNext").disabled)return;
+  if(troqFlowStage===0){troqShowStage(1);return;}
+  if(troqFlowStage===1){
+    if(!document.getElementById("troqBrandName").value.trim()||!document.getElementById("troqProductName").value.trim()){
+      alert("Enter brand name and product name.");return;
+    }
+    troqShowStage(2);return;
+  }
+  if(troqBuildReceipt())window.print();
+});
+const troqOriginalClose=closeTroqSample;
+closeTroqSample=function(){if(troqFlowStage>0){troqShowStage(troqFlowStage-1);return;}troqOriginalClose();};
 
 /* ESC CLOSE */
 
