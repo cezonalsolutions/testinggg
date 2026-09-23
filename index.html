@@ -515,6 +515,32 @@ body{
 .mainUI{display:none;min-height:100dvh;background:#fff;color:#242424;font-family:'Outfit',sans-serif;}
 .mainUI.active{display:block;}
 .mainUI .mainPlaceholder{padding:30px 24px;}
+
+/* MAIN UI 1 — GUEST DESIGN */
+#mainUI1{width:100%;min-height:100vh;min-height:100dvh;background:#fff;font-family:'Outfit',sans-serif;}
+#mainUI1 .mainUI1Top{width:100%;display:flex;align-items:center;justify-content:center;padding:15px 8px;}
+#mainUI1 .mainUI1TopImage{display:block;width:100%;max-width:440px;height:220px;object-fit:contain;object-position:center;}
+#mainUI1 .mainUI1LoginArea{width:100%;display:flex;justify-content:center;padding:10px 20px;}
+#mainUI1 .mainUI1LoginButton{width:100%;max-width:400px;height:58px;border:none;border-radius:50px;background:#ff2380;color:#fff;font-family:'Outfit',sans-serif;font-size:20px;font-weight:500;cursor:pointer;}
+#mainUI1 .mainUI1LoginButton:active{opacity:.85;}
+#mainUI1 .mainUI1Steps{width:100%;max-width:440px;margin:30px auto 0;padding:0 20px 35px;}
+#mainUI1 .mainUI1StepsTitle{font-size:26px;font-weight:600;color:#222;margin-bottom:20px;}
+#mainUI1 .mainUI1Step{display:flex;align-items:flex-start;gap:15px;padding:17px 0;border-bottom:1px solid #f0f0f0;}
+#mainUI1 .mainUI1Step:last-child{border-bottom:none;}
+#mainUI1 .mainUI1StepNumber{width:40px;height:40px;min-width:40px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:#ffe5f0;color:#ff2380;font-size:18px;font-weight:600;}
+#mainUI1 .mainUI1StepContent{flex:1;padding-top:1px;}
+#mainUI1 .mainUI1StepHeading{font-size:18px;font-weight:600;color:#222;line-height:1.4;}
+#mainUI1 .mainUI1StepDescription{margin-top:5px;font-size:14px;font-weight:400;line-height:1.5;color:#777;}
+@media(max-width:480px){
+#mainUI1 .mainUI1Top{padding:12px 4px;}
+#mainUI1 .mainUI1TopImage{max-width:380px;height:200px;}
+#mainUI1 .mainUI1LoginArea{padding:10px 20px;}
+#mainUI1 .mainUI1LoginButton{height:58px;font-size:19px;}
+#mainUI1 .mainUI1Steps{margin-top:25px;}
+#mainUI1 .mainUI1StepsTitle{font-size:24px;}
+#mainUI1 .mainUI1StepHeading{font-size:17px;}
+}
+
 </style>
 </head>
 
@@ -659,8 +685,44 @@ body{
 
 <!-- MAIN UI 1: SKIP / GUEST -->
 <div id="mainUI1" class="mainUI">
-    <!-- BRO: PASTE YOUR MAIN UI 1 CONTENT HERE -->
-    <div class="mainPlaceholder"><h1>Main UI 1</h1></div>
+    <!-- TOP IMAGE -->
+    <div class="mainUI1Top">
+        <img src="bill.webp" class="mainUI1TopImage" alt="TROQ">
+    </div>
+
+    <!-- LOGIN BUTTON -->
+    <div class="mainUI1LoginArea">
+        <button class="mainUI1LoginButton" id="guestLoginButton" type="button">Login</button>
+    </div>
+
+    <!-- STEPS -->
+    <section class="mainUI1Steps">
+        <h2 class="mainUI1StepsTitle">Steps</h2>
+
+        <div class="mainUI1Step">
+            <div class="mainUI1StepNumber">1</div>
+            <div class="mainUI1StepContent">
+                <div class="mainUI1StepHeading">Connect to Bluetooth</div>
+                <p class="mainUI1StepDescription">Connect your printer via Bluetooth.</p>
+            </div>
+        </div>
+
+        <div class="mainUI1Step">
+            <div class="mainUI1StepNumber">2</div>
+            <div class="mainUI1StepContent">
+                <div class="mainUI1StepHeading">Create Your Receipt</div>
+                <p class="mainUI1StepDescription">Type your own receipt or add items.</p>
+            </div>
+        </div>
+
+        <div class="mainUI1Step">
+            <div class="mainUI1StepNumber">3</div>
+            <div class="mainUI1StepContent">
+                <div class="mainUI1StepHeading">Click Print</div>
+                <p class="mainUI1StepDescription">Get your receipt in just 0.02 seconds.</p>
+            </div>
+        </div>
+    </section>
 </div>
 
 <!-- MAIN UI 2: LOGGED-IN USER -->
@@ -734,6 +796,18 @@ function openMainUI(type){
     document.body.style.background = "#fff";
     window.scrollTo(0,0);
 }
+
+/* GUEST LOGIN BUTTON → SAME LOGIN SCREEN */
+document.getElementById("guestLoginButton").addEventListener("click",()=>{
+    document.getElementById("mainUI1").classList.remove("active");
+    document.getElementById("mainUI2").classList.remove("active");
+    screen.style.display = "flex";
+    screen.classList.remove("keyboardOpen");
+    document.documentElement.style.overflow = "hidden";
+    document.body.style.overflow = "hidden";
+    document.body.style.background = "#ff2380";
+    window.scrollTo(0,0);
+});
 
 /* BUTTON STATE */
 
