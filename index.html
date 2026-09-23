@@ -8,13 +8,11 @@
 <meta name="viewport"
 content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-<title>Login</title>
+<title>TROQ Login</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
 
 <style>
-
-/* RESET */
 
 *{
     margin:0;
@@ -22,8 +20,7 @@ content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable
     box-sizing:border-box;
 }
 
-html,
-body{
+html,body{
     width:100%;
     height:100%;
     overflow:hidden;
@@ -34,8 +31,6 @@ body{
     font-family:'Poppins',sans-serif;
     background:#ff2380;
 }
-
-/* MAIN SCREEN */
 
 .loginScreen{
     position:relative;
@@ -65,7 +60,7 @@ body{
     transition:flex .35s ease;
 }
 
-/* SIMPLE AND SECURE */
+/* TEXT */
 
 .handText{
     position:absolute;
@@ -85,8 +80,6 @@ body{
     color:white;
 }
 
-/* BILLING SOFTWARE */
-
 .billingText{
     position:absolute;
     top:calc(12% + 52px);
@@ -96,6 +89,7 @@ body{
     text-align:center;
 
     font-family:'Outfit',sans-serif;
+
     font-size:clamp(14px,3.5vw,19px);
     font-weight:400;
 
@@ -105,7 +99,7 @@ body{
     color:rgba(255,255,255,.85);
 }
 
-/* SKIP BUTTON */
+/* SKIP */
 
 .skipButton{
     position:absolute;
@@ -121,7 +115,6 @@ body{
     border-radius:30px;
 
     background:rgba(255,255,255,.15);
-
     color:white;
 
     font-family:'Outfit',sans-serif;
@@ -129,15 +122,6 @@ body{
     font-weight:500;
 
     cursor:pointer;
-
-    backdrop-filter:blur(8px);
-    -webkit-backdrop-filter:blur(8px);
-
-    transition:background .2s ease;
-}
-
-.skipButton:active{
-    background:rgba(255,255,255,.3);
 }
 
 /* IMAGE */
@@ -192,7 +176,7 @@ body{
     color:#242424;
 }
 
-/* MOBILE INPUT */
+/* INPUT */
 
 .phoneBox{
     display:flex;
@@ -215,6 +199,7 @@ body{
 
     font-size:20px;
     font-weight:500;
+
     color:#444;
 
     padding-right:15px;
@@ -255,7 +240,7 @@ body{
     display:flex;
 }
 
-/* MOBILE NUMBER DISPLAY */
+/* MOBILE DISPLAY */
 
 .mobileDisplay{
     display:none;
@@ -264,11 +249,8 @@ body{
     justify-content:space-between;
 
     width:100%;
-
     margin-top:12px;
     padding:0 2px;
-
-    font-family:'Outfit',sans-serif;
 }
 
 .mobileDisplay.show{
@@ -282,7 +264,6 @@ body{
     font-weight:400;
 
     color:#666;
-    letter-spacing:.2px;
 }
 
 .editMobile{
@@ -295,7 +276,6 @@ body{
     font-weight:500;
 
     color:#ff2380;
-
     cursor:pointer;
 }
 
@@ -329,6 +309,24 @@ body{
     cursor:pointer;
 }
 
+/* ERROR */
+
+.loginError{
+    display:none;
+
+    margin-top:12px;
+
+    font-family:'Outfit',sans-serif;
+    font-size:14px;
+
+    color:#e11d48;
+    text-align:center;
+}
+
+.loginError.show{
+    display:block;
+}
+
 /* TERMS */
 
 .terms{
@@ -338,6 +336,7 @@ body{
 
     font-size:11px;
     line-height:1.6;
+
     color:#777;
 }
 
@@ -347,7 +346,7 @@ body{
     font-weight:500;
 }
 
-/* KEYBOARD OPEN */
+/* KEYBOARD */
 
 .loginScreen.keyboardOpen .loginHero{
     flex:0 0 38%;
@@ -362,7 +361,6 @@ body{
     flex:1 1 auto;
 
     border-radius:32px 32px 0 0;
-
     padding-top:35px;
 }
 
@@ -422,10 +420,7 @@ body{
     .terms{
         font-size:10px;
     }
-
 }
-
-/* SHORT HEIGHT */
 
 @media(max-height:700px){
 
@@ -447,7 +442,6 @@ body{
     .terms{
         margin-top:10px;
     }
-
 }
 
 </style>
@@ -457,19 +451,17 @@ body{
 
 <div class="loginScreen" id="loginScreen">
 
-    <!-- HERO -->
-
     <div class="loginHero">
 
-        <!-- SKIP BUTTON -->
+        <!-- SKIP -->
 
-       <button
-    class="skipButton"
-    id="skipButton"
-    type="button"
->
-    Skip
-</button>
+        <button
+            class="skipButton"
+            id="skipButton"
+            type="button"
+        >
+            Skip
+        </button>
 
         <div class="handText">
             Simple and Secure
@@ -495,7 +487,7 @@ body{
             Login with mobile number
         </div>
 
-        <!-- ENTER MOBILE -->
+        <!-- MOBILE -->
 
         <div class="phoneBox" id="mobileBox">
 
@@ -514,7 +506,7 @@ body{
 
         </div>
 
-        <!-- ENTER PASSWORD -->
+        <!-- PASSWORD -->
 
         <div class="phoneBox passwordBox" id="passwordBox">
 
@@ -527,7 +519,7 @@ body{
 
         </div>
 
-        <!-- MOBILE NUMBER DISPLAY -->
+        <!-- MOBILE DISPLAY -->
 
         <div class="mobileDisplay" id="mobileDisplay">
 
@@ -553,10 +545,17 @@ body{
         <button
             class="proceedButton"
             id="proceedButton"
+            type="button"
             disabled
         >
             Proceed
         </button>
+
+        <!-- ERROR -->
+
+        <div class="loginError" id="loginError">
+            Incorrect mobile number or password
+        </div>
 
         <!-- TERMS -->
 
@@ -581,6 +580,16 @@ body{
 </div>
 
 <script>
+
+/* TEST ACCOUNT */
+
+const TEST_MOBILE = "8332881902";
+const TEST_PASSWORD = "123456";
+
+/* MAIN UI PAGES */
+
+const GUEST_PAGE = "main1.html";
+const USER_PAGE = "main2.html";
 
 /* ELEMENTS */
 
@@ -617,6 +626,9 @@ document.getElementById("proceedButton");
 const skipButton =
 document.getElementById("skipButton");
 
+const loginError =
+document.getElementById("loginError");
+
 let step = "mobile";
 
 /* BUTTON STATE */
@@ -652,16 +664,21 @@ mobileInput.addEventListener("input",()=>{
     .replace(/\D/g,"")
     .slice(0,10);
 
+    loginError.classList.remove("show");
+
     updateButton();
 
 });
 
 /* PASSWORD INPUT */
 
-passwordInput.addEventListener(
-    "input",
-    updateButton
-);
+passwordInput.addEventListener("input",()=>{
+
+    loginError.classList.remove("show");
+
+    updateButton();
+
+});
 
 /* SHEET */
 
@@ -719,9 +736,40 @@ button.addEventListener("click",()=>{
 
     }else{
 
-        /* CONNECT LOGIN API HERE */
+        /* TEST LOGIN VERIFICATION */
 
-        alert("Login clicked");
+        const enteredMobile =
+        mobileInput.value.trim();
+
+        const enteredPassword =
+        passwordInput.value;
+
+        if(
+            enteredMobile === TEST_MOBILE &&
+            enteredPassword === TEST_PASSWORD
+        ){
+
+            /* SAVE TEST LOGIN SESSION */
+
+            sessionStorage.setItem(
+                "troqLogin",
+                "true"
+            );
+
+            sessionStorage.setItem(
+                "troqMobile",
+                enteredMobile
+            );
+
+            /* OPEN MAIN UI 2 */
+
+            window.location.href = USER_PAGE;
+
+        }else{
+
+            loginError.classList.add("show");
+
+        }
 
     }
 
@@ -746,6 +794,8 @@ editMobile.addEventListener("click",()=>{
 
     button.textContent = "Proceed";
 
+    loginError.classList.remove("show");
+
     updateButton();
 
     openSheet();
@@ -754,11 +804,14 @@ editMobile.addEventListener("click",()=>{
 
 });
 
-/* SKIP BUTTON */
+/* SKIP → MAIN UI 1 */
 
 skipButton.addEventListener("click",()=>{
 
-    window.location.href = "home.html";
+    sessionStorage.removeItem("troqLogin");
+    sessionStorage.removeItem("troqMobile");
+
+    window.location.href = GUEST_PAGE;
 
 });
 
