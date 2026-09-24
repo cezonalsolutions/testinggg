@@ -1165,7 +1165,7 @@ html:has(#mainUI2.active),body:has(#mainUI2.active){overflow-y:auto!important;ov
 #troqScanPage #troqScanPageStatus:empty{display:none!important}
 #troqScanPage #troqScanManual{margin-bottom:14px!important}
 #troqScanPage #troqScanBill{margin-top:0!important}
-#troqBillManualSheet{position:fixed;inset:0;z-index:2100;display:none;align-items:flex-end;justify-content:center}
+#troqBillManualSheet{position:fixed;inset:0;z-index:2147483647!important;display:none;align-items:flex-end;justify-content:center;isolation:isolate}
 #troqBillManualSheet.open{display:flex}
 #troqBillManualSheet .troqManualBackdrop{position:absolute;inset:0;background:#0009}
 #troqBillManualSheet .troqManualPanel{position:relative;width:100%;max-width:650px;max-height:86dvh;overflow-y:auto;background:#fff;color:#161616;border-radius:25px 25px 0 0;padding:20px 20px calc(25px + env(safe-area-inset-bottom));box-shadow:0 -12px 50px #0005}
