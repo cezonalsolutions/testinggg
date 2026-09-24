@@ -1205,6 +1205,17 @@ body:has(#troqScanPage.open) .troqBottomNav button{pointer-events:auto!important
 #troqScanPage #troqScanBill.active{background:#fff;color:#151515}
 #troqScanPage #troqScanManual{align-self:center}
 </style>
+
+<style id="troqManualSheetFinalLayerFix">
+/* Keep the manual barcode sheet above camera and bottom navigation. */
+html body #troqBillManualSheet{position:fixed!important;inset:0!important;z-index:999999!important;isolation:isolate!important;align-items:flex-end!important;justify-content:center!important;}
+html body #troqBillManualSheet.open{display:flex!important;}
+html body #troqBillManualSheet .troqManualBackdrop{position:absolute!important;inset:0!important;z-index:0!important;}
+html body #troqBillManualSheet .troqManualPanel{position:relative!important;z-index:1!important;width:100%!important;max-width:650px!important;max-height:calc(100dvh - 12px)!important;overflow-y:auto!important;overscroll-behavior:contain!important;}
+html body #troqBillManualSheet .troqManualTop{justify-content:flex-start!important;}
+html body #troqBillManualSheet .troqManualClose{order:-1!important;flex:0 0 auto!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;width:32px!important;height:36px!important;padding:0!important;margin:0!important;border:0!important;border-radius:0!important;box-shadow:none!important;background:transparent!important;color:#161616!important;appearance:none!important;-webkit-appearance:none!important;}
+html body #troqBillManualSheet .troqManualClose svg{display:block!important;width:25px!important;height:25px!important;stroke:currentColor!important;}
+</style>
 </head>
 
 <body>
@@ -2880,14 +2891,14 @@ function troqScanPageUI(){
 }
 function troqBillManualSheetUI(){
  let sheet=document.getElementById('troqBillManualSheet');if(sheet)return sheet;
- sheet=document.createElement('div');sheet.id='troqBillManualSheet';sheet.innerHTML='<div class="troqManualBackdrop" data-manual-close></div><section class="troqManualPanel" role="dialog" aria-modal="true" aria-label="Find saved product"><div class="troqManualTop"><h2>Enter barcode manually</h2><button type="button" class="troqManualClose" data-manual-close aria-label="Back"><i class="fa-solid fa-arrow-left"></i></button></div><input id="troqBillManualInput" type="text" inputmode="numeric" autocomplete="off" placeholder="Barcode or product name" aria-label="Barcode or product name"><div id="troqBillManualResults"></div></section>';
+ sheet=document.createElement('div');sheet.id='troqBillManualSheet';sheet.innerHTML='<div class="troqManualBackdrop" data-manual-close></div><section class="troqManualPanel" role="dialog" aria-modal="true" aria-label="Find saved product"><div class="troqManualTop"><h2>Enter barcode manually</h2><button type="button" class="troqManualClose" data-manual-close aria-label="Back"><svg aria-hidden="true" viewBox="0 0 24 24" width="25" height="25" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button></div><input id="troqBillManualInput" type="text" inputmode="numeric" autocomplete="off" placeholder="Barcode or product name" aria-label="Barcode or product name"><div id="troqBillManualResults"></div></section>';
  document.body.appendChild(sheet);
  sheet.querySelectorAll('[data-manual-close]').forEach(b=>b.onclick=troqCloseBillManualSheet);
  sheet.querySelector('#troqBillManualInput').addEventListener('input',troqRenderBillManualSuggestions);
  sheet.querySelector('#troqBillManualInput').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();const first=sheet.querySelector('[data-manual-product]');if(first)first.click();}});
  return sheet;
 }
-function troqOpenBillManualSheet(){const sheet=troqBillManualSheetUI();sheet.classList.add('open');sheet.querySelector('#troqBillManualInput').value='';troqRenderBillManualSuggestions();sheet.querySelector('#troqBillManualInput').focus();}
+function troqOpenBillManualSheet(){const sheet=troqBillManualSheetUI();if(sheet.parentElement!==document.body)document.body.appendChild(sheet);sheet.classList.add('open');sheet.querySelector('#troqBillManualInput').value='';troqRenderBillManualSuggestions();sheet.querySelector('#troqBillManualInput').focus();}
 function troqCloseBillManualSheet(){document.getElementById('troqBillManualSheet')?.classList.remove('open');}
 function troqRenderBillManualSuggestions(){const sheet=troqBillManualSheetUI(),q=sheet.querySelector('#troqBillManualInput').value.trim().toLowerCase(),out=sheet.querySelector('#troqBillManualResults');if(!q){out.innerHTML='<p class="troqManualEmpty">Type a barcode or product name.</p>';return;}const matches=troqInventory().filter(p=>String(p.barcode||'').toLowerCase().includes(q)||String(p.name||'').toLowerCase().includes(q)).slice(0,12);out.innerHTML=matches.length?matches.map(p=>'<button type="button" class="troqManualResult" data-manual-product="'+troqEsc(p.id)+'"><span><strong>'+troqEsc(p.name)+'</strong><small>'+troqEsc(p.barcode||'No barcode')+'</small></span><span>'+troqBillMoney(p.price)+'</span></button>').join(''):'<p class="troqManualEmpty">No saved product found.</p>';out.querySelectorAll('[data-manual-product]').forEach(btn=>btn.onclick=()=>{const p=troqInventory().find(item=>item.id===btn.dataset.manualProduct);if(!p)return;troqCloseBillManualSheet();troqHandleScannedCode(p.barcode||'');if(!p.barcode){const line=troqScanCart.find(item=>item.id===p.id);if(line)line.qty++;else troqScanCart.push({id:p.id,name:p.name,qty:1,price:Number(p.price)||0});troqRenderScanCart();}});}
 function troqRenderScanCart(){const page=troqScanPageUI(),bill=page.querySelector('#troqScanBill'),cart=page.querySelector('#troqScanCart'),checkout=page.querySelector('#troqScanCheckout');bill.hidden=!troqInventory().length;bill.classList.toggle('active',troqScanBillMode);bill.textContent=troqScanBillMode?'Add product':'Bill';cart.hidden=!troqScanBillMode;checkout.hidden=!troqScanBillMode||!troqScanCart.length;cart.innerHTML=troqScanBillMode?(troqScanCart.length?troqScanCart.map(p=>'<span>'+troqEsc(p.name)+' × '+p.qty+' · '+troqBillMoney(p.price*p.qty)+'</span>').join(''):''):'';}
