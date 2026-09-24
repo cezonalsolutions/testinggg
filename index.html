@@ -1023,6 +1023,26 @@ body{
 .troqProfileRow{padding:15px 0;border-bottom:1px solid #f2f2f2;display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
 .troqProfileRow:last-child{border-bottom:0}.troqProfileRow span{font-size:13px;color:#888;flex:0 0 36%}.troqProfileRow strong{font-size:14px;text-align:right;overflow-wrap:anywhere;font-weight:600;color:#242424}
 .troqProfileEdit{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;min-height:53px;border:0;border-radius:15px;background:#ff2380;color:#fff;font:600 16px 'Outfit',sans-serif;margin-top:20px;cursor:pointer}
+
+/* PROFILE — CLEAN BUSINESS HEADER */
+.troqDashContent.troqProfilePage{padding:0 0 28px;max-width:620px}
+.troqProfileTop{padding:24px 22px 18px;background:#fff}
+.troqProfileTop h1{text-align:center;font-size:23px;margin:0 0 24px}
+.troqProfileIdentity{display:flex;align-items:center;gap:19px}
+.troqProfileIdentity .troqProfileLogo,.troqProfileIdentity .troqProfileFallback{flex:none;width:94px;height:94px;border-radius:50%;object-fit:cover;border:1px solid #eee;background:#fff5f9}
+.troqProfileIdentity .troqProfileFallback{display:grid;place-items:center;font-size:35px;font-weight:700;color:#ff2380}
+.troqProfileIdentityText{min-width:0;flex:1}
+.troqProfileIdentityText h2{font-size:22px;line-height:1.25;overflow-wrap:anywhere}
+.troqProfileIdentityText p{font-size:13px;margin-top:5px;color:#777;overflow-wrap:anywhere}
+.troqProfileStats{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:22px}
+.troqProfileStat{text-align:center;padding:14px 8px;border:1px solid #eee;border-radius:14px;background:#fff}
+.troqProfileStat strong{display:block;font-size:23px;color:#222;line-height:1.3}
+.troqProfileStat span{display:block;margin-top:4px;color:#777;font-size:13px}
+.troqProfileEdit{margin-top:19px;background:#fff;color:#242424;border:1px solid #dedede;border-radius:11px}
+.troqProfileDetailsTitle{padding:22px 22px 0;font-size:18px;font-weight:600}
+.troqProfilePage .troqProfileSection{margin:13px 22px 0}
+.troqHomeCreate{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:62px;margin-top:25px;border:0;border-radius:16px;background:#ff2380;color:white;font:600 19px 'Outfit',sans-serif;cursor:pointer}
+.troqHomeCreate i{font-size:20px}
 </style>
 </head>
 
@@ -1734,22 +1754,32 @@ troqField('troqSetupNext').addEventListener('click',async()=>{const error=troqVa
         troqShowDashboard('home');}catch(e){troqSetupError(e.message||'Could not save business details');}finally{btn.disabled=false;btn.textContent='Confirm & Save';}});
 
 function troqProfileRow(label,value){return '<div class="troqProfileRow"><span>'+troqEsc(label)+'</span><strong>'+troqEsc(value||'Not provided')+'</strong></div>';}
+function troqBillStats(){
+  // No billing records are written by the current dashboard yet. Never show fabricated totals.
+  const bills=Array.isArray(troqMyData?.bills)?troqMyData.bills:[];
+  const revenue=bills.reduce((sum,bill)=>sum+(Number(bill.total_amount ?? bill.total ?? bill.amount)||0),0);
+  return {count:bills.length,revenue};
+}
 function troqShowDashboard(tab='home'){
   troqActiveTab=tab;troqSetupEl.hidden=true;troqDashboardEl.hidden=false;
   const b=troqMyData.business||{};
   troqField('troqDashBusiness').textContent=b.name||'My Business';
   document.querySelectorAll('.troqBottomNav button').forEach(x=>x.classList.toggle('selected',x.dataset.tab===tab));
   const content=troqField('troqDashContent');
+  content.classList.toggle('troqProfilePage',tab==='profile');
   const title={home:'Home',items:'Items',scanner:'Scanner',insights:'Insights',profile:'Profile'}[tab];
   if(tab==='home'){
-    content.innerHTML=(b.logo_url?'<img src="'+troqEsc(b.logo_url)+'" alt="Business logo" style="width:78px;height:78px;object-fit:contain;border-radius:15px;margin-bottom:14px">':'')+'<h1>Welcome, '+troqEsc(b.name||'')+'!</h1><p>'+troqEsc(b.subtext||'')+'</p><p>Your business dashboard is ready.</p><div class="troqDashCard"><h2>Business details</h2><p>'+troqEsc(b.type||'')+'</p><p>'+troqEsc(b.address||'')+'</p></div>';
+    content.innerHTML='<h1>Create a bill</h1><button type="button" id="troqCreateBill" class="troqHomeCreate"><i class="fa-solid fa-receipt" aria-hidden="true"></i> Create a bill</button>';
+    troqField('troqCreateBill').onclick=()=>troqShowDashboard('items');
   }else if(tab==='profile'){
     const logo=b.logo_url||b.logo||'';
     const avatar=logo?'<img class="troqProfileLogo" src="'+troqEsc(logo)+'" alt="Business logo">':'<div class="troqProfileFallback">'+troqEsc((b.name||'T').charAt(0).toUpperCase())+'</div>';
-    content.innerHTML='<h1>Profile</h1><p>Manage your business and account details.</p>'+
-      '<div class="troqProfileHero">'+avatar+'<h2 style="font-family:&quot;'+troqEsc(b.font||'Outfit')+'&quot;,sans-serif">'+troqEsc(b.name||'My Business')+'</h2><p>'+troqEsc(b.subtext||'')+'</p></div>'+
-      '<div class="troqProfileSection">'+troqProfileRow('Login mobile',sessionStorage.getItem('troqMobile'))+troqProfileRow('Business mobile',b.mobile)+troqProfileRow('Business type',b.type)+troqProfileRow('Address',b.address)+troqProfileRow('GSTIN',b.gst)+troqProfileRow('Monthly sales',b.average_sales)+troqProfileRow('Brand font',b.font)+'</div>'+
-      '<button type="button" class="troqProfileEdit" id="troqEditBusiness"><i class="fa-solid fa-pen-to-square"></i> Edit business profile</button>';
+    const stats=troqBillStats();
+    const formattedRevenue=new Intl.NumberFormat('en-IN',{style:'currency',currency:'INR',maximumFractionDigits:2}).format(stats.revenue);
+    content.innerHTML='<div class="troqProfileTop"><h1>Profile</h1><div class="troqProfileIdentity">'+avatar+'<div class="troqProfileIdentityText"><h2 style="font-family:&quot;'+troqEsc(b.font||'Outfit')+'&quot;,sans-serif">'+troqEsc(b.name||'My Business')+'</h2><p>'+troqEsc(b.subtext||'')+'</p><p>'+troqEsc(b.type||'')+'</p></div></div>'+
+      '<div class="troqProfileStats"><div class="troqProfileStat"><strong>'+stats.count+'</strong><span>Bills</span></div><div class="troqProfileStat"><strong>'+troqEsc(formattedRevenue)+'</strong><span>Revenue</span></div></div>'+
+      '<button type="button" class="troqProfileEdit" id="troqEditBusiness"><i class="fa-solid fa-pen-to-square"></i> Edit Profile</button></div>'+
+      '<h3 class="troqProfileDetailsTitle">Business details</h3><div class="troqProfileSection">'+troqProfileRow('Login mobile',sessionStorage.getItem('troqMobile'))+troqProfileRow('Business mobile',b.mobile)+troqProfileRow('Business type',b.type)+troqProfileRow('Address',b.address)+troqProfileRow('GSTIN',b.gst)+troqProfileRow('Monthly sales',b.average_sales)+troqProfileRow('Brand font',b.font)+'</div>';
   }else{
     content.innerHTML='<h1>'+title+'</h1><p>'+title+' screen is ready for your next features.</p>';
   }
