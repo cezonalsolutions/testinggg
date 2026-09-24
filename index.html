@@ -999,6 +999,30 @@ body{
 @keyframes troqSaveSpin{to{transform:rotate(360deg)}}.troqSmallSpinner{display:inline-block;width:23px;height:23px;border:3px solid rgba(255,255,255,.38);border-top-color:white;border-radius:50%;animation:troqSaveSpin .7s linear infinite;vertical-align:middle}.troqSetupActions{display:flex;gap:12px;margin-top:34px}.troqSetupActions button{height:56px;border:0;border-radius:16px;font:600 17px 'Outfit',sans-serif;cursor:pointer}.troqBackBtn{flex:0 0 95px;background:#f5f5f5;color:#333}.troqNextBtn{flex:1;background:#ff2380;color:#fff}.troqNextBtn:disabled{opacity:.65}.troqSetupError{margin-top:15px;color:#d92323;font-size:14px}.troqUploadLabel{display:flex;align-items:center;gap:12px;border:1.5px dashed #ff93bf;background:#fff6fa;border-radius:16px;padding:18px;color:#ff2380;cursor:pointer;font-size:14px}.troqUploadLabel i{font-size:24px}.troqBizLogoPreview{max-width:110px;max-height:110px;object-fit:contain;margin:16px auto}.troqBizLogoPreview:not([hidden]){display:block}.troqConfirmTitle{font-size:19px;margin:28px 0 12px}.troqConfirmDetails{border:1px solid #eee;border-radius:15px;padding:15px;font-size:14px}.troqConfirmDetails div{display:flex;justify-content:space-between;gap:14px;padding:8px 0;border-bottom:1px solid #f5f5f5}.troqConfirmDetails div:last-child{border:0}.troqConfirmDetails span{color:#777;flex:0 0 36%}.troqConfirmDetails strong{overflow-wrap:anywhere;text-align:right}
 .troqDashboard[hidden],.troqSetup[hidden]{display:none!important}.troqDashboard{min-height:100dvh;padding-bottom:calc(82px + env(safe-area-inset-bottom))}.troqDashHeader{padding:20px 22px;border-bottom:1px solid #f4f4f4}.troqDashHeader>span:last-child{font-size:13px;color:#777;max-width:60%;overflow-wrap:anywhere;text-align:right}.troqDashContent{padding:26px 22px;max-width:620px;margin:auto}.troqDashContent h1{font-size:26px;margin-bottom:10px}.troqDashContent p{color:#777;line-height:1.5}.troqDashCard{padding:20px;border:1px solid #eee;border-radius:18px;margin-top:20px;overflow-wrap:anywhere}.troqDashCard h2{font-size:18px;margin-bottom:12px}.troqDashCard p{margin:8px 0}.troqDashAction{border:0;border-radius:13px;background:#ff2380;color:#fff;padding:13px 18px;margin-top:16px;font:600 15px 'Outfit',sans-serif}.troqBottomNav{position:fixed;z-index:110;bottom:0;left:0;right:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));background:#fff;border-top:1px solid #eee;padding:10px 4px calc(10px + env(safe-area-inset-bottom));box-shadow:0 -3px 15px #00000008}.troqBottomNav button{display:flex;flex-direction:column;align-items:center;gap:6px;background:none;border:0;color:#929292;font:500 11px 'Outfit',sans-serif;cursor:pointer}.troqBottomNav button i{font-size:20px}.troqBottomNav button.selected{color:#ff2380}
  .troqSubtextPreview{margin-top:16px;padding:16px;border-radius:14px;background:#fff4f9;color:#ff2380;text-align:center;font:500 17px Outfit,sans-serif;overflow-wrap:anywhere}
+
+/* TROQ FLOATING SCANNER NAV */
+.troqDashboard{padding-bottom:calc(105px + env(safe-area-inset-bottom))}
+.troqBottomNav{height:calc(76px + env(safe-area-inset-bottom));display:flex;align-items:center;justify-content:space-around;padding:0 8px env(safe-area-inset-bottom);border-top:0;box-shadow:0 -4px 25px rgba(0,0,0,.06);overflow:visible}
+.troqBottomNav button{flex:1;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:#9298a3;font:600 11px 'Outfit',sans-serif;transition:color .2s}
+.troqBottomNav button i{font-size:21px}
+.troqBottomNav button.selected,.troqBottomNav button:hover{color:#111827}
+.troqBottomNav .troqScannerSpace{flex:1;height:100%;position:relative;display:flex;align-items:center;justify-content:center}
+.troqBottomNav .troqScannerBtn{position:absolute;top:-29px;width:65px;height:65px;border:5px solid #f5f6f8;border-radius:50%;background:#111827;color:#fff;display:flex;align-items:center;justify-content:center;font-size:25px;box-shadow:0 5px 15px rgba(0,0,0,.15);transition:transform .2s}
+.troqBottomNav .troqScannerBtn i{font-size:25px}
+.troqBottomNav .troqScannerBtn:hover{transform:translateY(-3px);color:#fff}
+.troqBottomNav .troqScannerBtn.selected{color:#fff;background:#ff2380}
+.troqBottomNav .troqScannerLabel{position:absolute;bottom:13px;font-size:11px;font-weight:600;color:#9298a3;pointer-events:none}
+.troqBottomNav .troqScannerSpace:has(.selected) .troqScannerLabel{color:#111827}
+@media(min-width:768px){.troqBottomNav{max-width:480px;left:50%;transform:translateX(-50%);border-radius:20px 20px 0 0}}
+/* PROFILE */
+.troqProfileHero{background:linear-gradient(145deg,#fff0f6,#fff);border:1px solid #ffe0ed;border-radius:24px;padding:26px 20px;text-align:center;margin-top:20px}
+.troqProfileLogo{width:94px;height:94px;border-radius:25px;background:#fff;object-fit:contain;padding:9px;border:1px solid #ffe1ec;box-shadow:0 7px 20px #ff238014;display:block;margin:0 auto 13px}
+.troqProfileFallback{width:94px;height:94px;border-radius:25px;background:#ff2380;color:#fff;display:grid;place-items:center;font:35px 'Bungee',sans-serif;margin:0 auto 13px}
+.troqProfileHero h2{font-size:23px;overflow-wrap:anywhere}.troqProfileHero p{margin-top:5px;font-size:14px}
+.troqProfileSection{border:1px solid #eee;border-radius:19px;margin-top:18px;padding:7px 17px;background:#fff}
+.troqProfileRow{padding:15px 0;border-bottom:1px solid #f2f2f2;display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
+.troqProfileRow:last-child{border-bottom:0}.troqProfileRow span{font-size:13px;color:#888;flex:0 0 36%}.troqProfileRow strong{font-size:14px;text-align:right;overflow-wrap:anywhere;font-weight:600;color:#242424}
+.troqProfileEdit{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;min-height:53px;border:0;border-radius:15px;background:#ff2380;color:#fff;font:600 16px 'Outfit',sans-serif;margin-top:20px;cursor:pointer}
 </style>
 </head>
 
@@ -1263,7 +1287,7 @@ body{
     <section id="troqDashboard" class="troqDashboard" hidden>
       <header class="troqDashHeader"><span class="troqBrand">TROQ</span><span id="troqDashBusiness"></span></header>
       <main id="troqDashContent" class="troqDashContent"></main>
-      <nav class="troqBottomNav" aria-label="Main navigation"><button type="button" data-tab="home" class="selected"><i class="fa-solid fa-house"></i><span>Home</span></button><button type="button" data-tab="items"><i class="fa-solid fa-box"></i><span>Items</span></button><button type="button" data-tab="scanner"><i class="fa-solid fa-barcode"></i><span>Scanner</span></button><button type="button" data-tab="insights"><i class="fa-solid fa-chart-simple"></i><span>Insights</span></button><button type="button" data-tab="profile"><i class="fa-solid fa-user"></i><span>Profile</span></button></nav>
+      <nav class="troqBottomNav" aria-label="Main navigation"><button type="button" data-tab="home" class="selected"><i class="fa-solid fa-house"></i><span>Home</span></button><button type="button" data-tab="items"><i class="fa-solid fa-box"></i><span>Items</span></button><div class="troqScannerSpace"><button type="button" class="troqScannerBtn" data-tab="scanner" aria-label="Scanner"><i class="fa-solid fa-expand"></i></button><span class="troqScannerLabel">Scanner</span></div><button type="button" data-tab="insights"><i class="fa-solid fa-chart-simple"></i><span>Insights</span></button><button type="button" data-tab="profile"><i class="fa-regular fa-user"></i><span>Profile</span></button></nav>
     </section>
 </div>
 
@@ -1709,7 +1733,29 @@ troqField('troqSetupNext').addEventListener('click',async()=>{const error=troqVa
         troqBizLogoData=logoUrl;
         troqShowDashboard('home');}catch(e){troqSetupError(e.message||'Could not save business details');}finally{btn.disabled=false;btn.textContent='Confirm & Save';}});
 
-function troqShowDashboard(tab='home'){troqActiveTab=tab;troqSetupEl.hidden=true;troqDashboardEl.hidden=false;const b=troqMyData.business||{};troqField('troqDashBusiness').textContent=b.name||'My Business';document.querySelectorAll('.troqBottomNav button').forEach(x=>x.classList.toggle('selected',x.dataset.tab===tab));const content=troqField('troqDashContent');const title={home:'Home',items:'Items',scanner:'Scanner',insights:'Insights',profile:'Profile'}[tab];if(tab==='home')content.innerHTML=(b.logo_url?'<img src=\"'+troqEsc(b.logo_url)+'\" alt=\"Business logo\" style=\"width:78px;height:78px;object-fit:contain;border-radius:15px;margin-bottom:14px\">':'')+'<h1>Welcome, '+troqEsc(b.name||'')+'!</h1><p>'+troqEsc(b.subtext||'')+'</p><p>Your business dashboard is ready.</p><div class="troqDashCard"><h2>Business details</h2><p>'+troqEsc(b.type||'')+'</p><p>'+troqEsc(b.address||'')+'</p></div>';else if(tab==='profile')content.innerHTML='<h1>Profile</h1><p>Your account and business details.</p><div class="troqDashCard">'+(b.logo_url?'<img src="'+troqEsc(b.logo_url)+'" alt="Business logo" style="width:90px;height:90px;object-fit:contain;margin-bottom:12px">':'')+'<h2>'+troqEsc(b.name||'My Business')+'</h2><p>'+troqEsc(b.subtext||'')+'</p><p><b>Login mobile:</b> '+troqEsc(sessionStorage.getItem('troqMobile'))+'</p><p><b>Business mobile:</b> '+troqEsc(b.mobile)+'</p><p><b>Address:</b> '+troqEsc(b.address)+'</p><p><b>Type:</b> '+troqEsc(b.type)+'</p><p><b>GST:</b> '+troqEsc(b.gst||'Not provided')+'</p><p><b>Avg. monthly sales:</b> '+troqEsc(b.average_sales||'Not provided')+'</p><button class="troqDashAction" id="troqEditBusiness">Edit business details</button></div>';else content.innerHTML='<h1>'+title+'</h1><p>'+title+' screen is ready for your next features.</p>';const edit=troqField('troqEditBusiness');if(edit)edit.onclick=()=>{troqFillBusiness(troqMyData.business);troqDashboardEl.hidden=true;troqSetupEl.hidden=false;troqShowSetupStep(0);};}
+function troqProfileRow(label,value){return '<div class="troqProfileRow"><span>'+troqEsc(label)+'</span><strong>'+troqEsc(value||'Not provided')+'</strong></div>';}
+function troqShowDashboard(tab='home'){
+  troqActiveTab=tab;troqSetupEl.hidden=true;troqDashboardEl.hidden=false;
+  const b=troqMyData.business||{};
+  troqField('troqDashBusiness').textContent=b.name||'My Business';
+  document.querySelectorAll('.troqBottomNav button').forEach(x=>x.classList.toggle('selected',x.dataset.tab===tab));
+  const content=troqField('troqDashContent');
+  const title={home:'Home',items:'Items',scanner:'Scanner',insights:'Insights',profile:'Profile'}[tab];
+  if(tab==='home'){
+    content.innerHTML=(b.logo_url?'<img src="'+troqEsc(b.logo_url)+'" alt="Business logo" style="width:78px;height:78px;object-fit:contain;border-radius:15px;margin-bottom:14px">':'')+'<h1>Welcome, '+troqEsc(b.name||'')+'!</h1><p>'+troqEsc(b.subtext||'')+'</p><p>Your business dashboard is ready.</p><div class="troqDashCard"><h2>Business details</h2><p>'+troqEsc(b.type||'')+'</p><p>'+troqEsc(b.address||'')+'</p></div>';
+  }else if(tab==='profile'){
+    const logo=b.logo_url||b.logo||'';
+    const avatar=logo?'<img class="troqProfileLogo" src="'+troqEsc(logo)+'" alt="Business logo">':'<div class="troqProfileFallback">'+troqEsc((b.name||'T').charAt(0).toUpperCase())+'</div>';
+    content.innerHTML='<h1>Profile</h1><p>Manage your business and account details.</p>'+
+      '<div class="troqProfileHero">'+avatar+'<h2 style="font-family:&quot;'+troqEsc(b.font||'Outfit')+'&quot;,sans-serif">'+troqEsc(b.name||'My Business')+'</h2><p>'+troqEsc(b.subtext||'')+'</p></div>'+
+      '<div class="troqProfileSection">'+troqProfileRow('Login mobile',sessionStorage.getItem('troqMobile'))+troqProfileRow('Business mobile',b.mobile)+troqProfileRow('Business type',b.type)+troqProfileRow('Address',b.address)+troqProfileRow('GSTIN',b.gst)+troqProfileRow('Monthly sales',b.average_sales)+troqProfileRow('Brand font',b.font)+'</div>'+
+      '<button type="button" class="troqProfileEdit" id="troqEditBusiness"><i class="fa-solid fa-pen-to-square"></i> Edit business profile</button>';
+  }else{
+    content.innerHTML='<h1>'+title+'</h1><p>'+title+' screen is ready for your next features.</p>';
+  }
+  const edit=troqField('troqEditBusiness');
+  if(edit)edit.onclick=()=>{troqFillBusiness(troqMyData.business);troqDashboardEl.hidden=true;troqSetupEl.hidden=false;troqShowSetupStep(0);};
+}
 document.querySelectorAll('.troqBottomNav button').forEach(b=>b.addEventListener('click',()=>troqShowDashboard(b.dataset.tab)));
 function troqStartUserBusiness(){const b=troqMyData?.business;if(b?.name){troqShowDashboard('home');return;}troqDashboardEl.hidden=true;troqSetupEl.hidden=false;troqFillBusiness(b);troqShowSetupStep(0);}
 
