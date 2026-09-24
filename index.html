@@ -1654,17 +1654,25 @@ troqField('troqBusinessForm').addEventListener('submit',e=>e.preventDefault());
 troqField('troqSetupNext').addEventListener('click',async()=>{const error=troqValidateStep();if(error){troqSetupError(error);return;}if(troqSetupStep<5){troqShowSetupStep(troqSetupStep+1);return;}const btn=troqField('troqSetupNext');btn.disabled=true;btn.innerHTML='<span class="troqSmallSpinner" aria-label="Saving"></span>';try{const b=troqBusinessValue();
         const token=sessionStorage.getItem('troqUserToken');
         if(!token)throw new Error('Login required');
-        // Logo is uploaded and business details saved by the server using the verified user token.
-        const response=await fetch(TROQ_SUPABASE_URL+'/functions/v1/troq-business-logo',{
-            method:'POST',headers:{'Content-Type':'application/json','apikey':TROQ_SUPABASE_KEY,'Authorization':'Bearer '+token},
-            body:JSON.stringify({business:b,logo_data_url:troqBizLogoFile?troqBizLogoData:null})
-        });
-        const result=await response.json();
-        if(!response.ok||!result.success)throw new Error(result.error||'Could not save business details');
-        troqMyData={...troqMyData,business:result.business};
-        troqBizLogoFile=null;troqBizLogoData=result.business.logo_url||'';
+        // Direct browser upload: prototype only; see SQL policy warning.
+        let logoUrl=troqMyData?.business?.logo_url||troqMyData?.business?.logo||'';
+        if(troqBizLogoFile){
+            const file=troqBizLogoFile;
+            const userId=sessionStorage.getItem('troqUserId');
+            if(!userId)throw new Error('Login again to upload your logo');
+            const ext={'image/png':'png','image/jpeg':'jpg','image/webp':'webp'}[file.type];
+            if(!ext||file.size>2*1024*1024)throw new Error('Choose PNG, JPG or WebP under 2 MB');
+            const path=userId+'/business-logo-'+crypto.randomUUID()+'.'+ext;
+            const {error:uploadError}=await troqDb.storage.from('troq-business-logos').upload(path,file,{contentType:file.type,upsert:false,cacheControl:'3600'});
+            if(uploadError)throw new Error('Logo upload failed: '+uploadError.message);
+            logoUrl=troqDb.storage.from('troq-business-logos').getPublicUrl(path).data.publicUrl;
+        }
+        const savedBusiness={...b,logo_url:logoUrl,logo:logoUrl};
+        await troqSaveMyData({...troqMyData,business:savedBusiness});
+        troqBizLogoFile=null;
+        troqBizLogoData=logoUrl;
         troqShowDashboard('home');}catch(e){troqSetupError(e.message||'Could not save business details');}finally{btn.disabled=false;btn.textContent='Confirm & Save';}});
-function troqShowDashboard(tab='home'){troqActiveTab=tab;troqSetupEl.hidden=true;troqDashboardEl.hidden=false;const b=troqMyData.business||{};troqField('troqDashBusiness').textContent=b.name||'My Business';document.querySelectorAll('.troqBottomNav button').forEach(x=>x.classList.toggle('selected',x.dataset.tab===tab));const content=troqField('troqDashContent');const title={home:'Home',items:'Items',scanner:'Scanner',insights:'Insights',profile:'Profile'}[tab];if(tab==='home')content.innerHTML='<h1>Welcome, '+troqEsc(b.name||'')+'!</h1><p>Your business dashboard is ready.</p><div class="troqDashCard"><h2>Business details</h2><p>'+troqEsc(b.type||'')+'</p><p>'+troqEsc(b.address||'')+'</p></div>';else if(tab==='profile')content.innerHTML='<h1>Profile</h1><p>Your account and business details.</p><div class="troqDashCard"><h2>'+troqEsc(b.name||'My Business')+'</h2><p><b>Login mobile:</b> '+troqEsc(sessionStorage.getItem('troqMobile'))+'</p><p><b>Business mobile:</b> '+troqEsc(b.mobile)+'</p><p><b>Address:</b> '+troqEsc(b.address)+'</p><p><b>Type:</b> '+troqEsc(b.type)+'</p><p><b>GST:</b> '+troqEsc(b.gst||'Not provided')+'</p><p><b>Avg. monthly sales:</b> '+troqEsc(b.average_sales||'Not provided')+'</p><button class="troqDashAction" id="troqEditBusiness">Edit business details</button></div>';else content.innerHTML='<h1>'+title+'</h1><p>'+title+' screen is ready for your next features.</p>';const edit=troqField('troqEditBusiness');if(edit)edit.onclick=()=>{troqFillBusiness(troqMyData.business);troqDashboardEl.hidden=true;troqSetupEl.hidden=false;troqShowSetupStep(0);};}
+function troqShowDashboard(tab='home'){troqActiveTab=tab;troqSetupEl.hidden=true;troqDashboardEl.hidden=false;const b=troqMyData.business||{};troqField('troqDashBusiness').textContent=b.name||'My Business';document.querySelectorAll('.troqBottomNav button').forEach(x=>x.classList.toggle('selected',x.dataset.tab===tab));const content=troqField('troqDashContent');const title={home:'Home',items:'Items',scanner:'Scanner',insights:'Insights',profile:'Profile'}[tab];if(tab==='home')content.innerHTML=(b.logo_url?'<img src=\"'+troqEsc(b.logo_url)+'\" alt=\"Business logo\" style=\"width:78px;height:78px;object-fit:contain;border-radius:15px;margin-bottom:14px\">':'')+'<h1>Welcome, '+troqEsc(b.name||'')+'!</h1><p>Your business dashboard is ready.</p><div class="troqDashCard"><h2>Business details</h2><p>'+troqEsc(b.type||'')+'</p><p>'+troqEsc(b.address||'')+'</p></div>';else if(tab==='profile')content.innerHTML='<h1>Profile</h1><p>Your account and business details.</p><div class="troqDashCard">'+(b.logo_url?'<img src="'+troqEsc(b.logo_url)+'" alt="Business logo" style="width:90px;height:90px;object-fit:contain;margin-bottom:12px">':'')+'<h2>'+troqEsc(b.name||'My Business')+'</h2><p><b>Login mobile:</b> '+troqEsc(sessionStorage.getItem('troqMobile'))+'</p><p><b>Business mobile:</b> '+troqEsc(b.mobile)+'</p><p><b>Address:</b> '+troqEsc(b.address)+'</p><p><b>Type:</b> '+troqEsc(b.type)+'</p><p><b>GST:</b> '+troqEsc(b.gst||'Not provided')+'</p><p><b>Avg. monthly sales:</b> '+troqEsc(b.average_sales||'Not provided')+'</p><button class="troqDashAction" id="troqEditBusiness">Edit business details</button></div>';else content.innerHTML='<h1>'+title+'</h1><p>'+title+' screen is ready for your next features.</p>';const edit=troqField('troqEditBusiness');if(edit)edit.onclick=()=>{troqFillBusiness(troqMyData.business);troqDashboardEl.hidden=true;troqSetupEl.hidden=false;troqShowSetupStep(0);};}
 document.querySelectorAll('.troqBottomNav button').forEach(b=>b.addEventListener('click',()=>troqShowDashboard(b.dataset.tab)));
 function troqStartUserBusiness(){const b=troqMyData?.business;if(b?.name){troqShowDashboard('home');return;}troqDashboardEl.hidden=true;troqSetupEl.hidden=false;troqFillBusiness(b);troqShowSetupStep(0);}
 
