@@ -1223,6 +1223,27 @@ html body #troqBillManualSheet .troqManualTop{justify-content:flex-start!importa
 html body #troqBillManualSheet .troqManualClose{order:-1!important;flex:0 0 auto!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;width:32px!important;height:36px!important;padding:0!important;margin:0!important;border:0!important;border-radius:0!important;box-shadow:none!important;background:transparent!important;color:#161616!important;appearance:none!important;-webkit-appearance:none!important;}
 html body #troqBillManualSheet .troqManualClose svg{display:block!important;width:25px!important;height:25px!important;stroke:currentColor!important;}
 </style>
+
+<style id="troqScannerPolishFinal">
+/* Camera is shorter, so bill controls stay reachable on small screens. */
+#troqScanPage .troqScanViewport{flex:1 1 auto!important;max-height:42dvh!important;min-height:130px!important;aspect-ratio:auto!important}
+#troqScanPage .troqScanMain{justify-content:flex-start!important;min-height:0!important}
+#troqScanPage #troqScanCart{max-height:29dvh!important;overflow-y:auto!important;gap:8px!important;padding:0 14px!important;width:100%!important}
+#troqScanPage .troqScanCartLine{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:12px;background:#ffffff16;color:#fff}
+#troqScanPage .troqScanCartName{flex:1;min-width:0;font-size:14px;overflow-wrap:anywhere}
+#troqScanPage .troqScanCartName small{display:block;margin-top:3px;opacity:.78;font-size:12px}
+#troqScanPage .troqScanCartLine button{width:35px;height:35px;flex:none;border:0;border-radius:9px;background:#fff;color:#181818;font:700 23px Outfit,sans-serif}
+#troqScanPage .troqScanCartLine strong{min-width:19px;text-align:center}
+#troqScanToast{position:fixed;left:50%;top:calc(16px + env(safe-area-inset-top));transform:translate(-50%,-10px);max-width:calc(100% - 30px);padding:12px 17px;border-radius:13px;background:#fff;color:#151515;box-shadow:0 8px 28px #0004;z-index:2147483646;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;font:600 14px Outfit,sans-serif;text-align:center}
+#troqScanToast.show{opacity:1;transform:translate(-50%,0)}
+html body #troqBillEditor:not([hidden]){z-index:2147483646!important;position:fixed!important;inset:0!important;display:flex!important;background:#fff!important}
+body:has(#troqBillEditor:not([hidden])) .troqBottomNav{visibility:hidden!important;pointer-events:none!important}
+body:has(#troqBillEditor:not([hidden])) #troqScanPage{visibility:hidden!important;pointer-events:none!important}
+/* Inline SVG icons inherit their own size and stroke instead of Font Awesome font rules. */
+svg.troqInlineIcon{display:inline-block!important;width:1em;height:1em;min-width:1em;stroke:currentColor!important;stroke-width:2;fill:none!important;vertical-align:middle;flex-shrink:0;font-family:initial!important;font-style:normal!important}
+button svg.troqInlineIcon{pointer-events:none}
+#troqBillManualSheet .troqManualClose svg{width:25px!important;height:25px!important;stroke:#161616!important;fill:none!important}
+</style>
 </head>
 
 <body>
@@ -2891,7 +2912,7 @@ function troqScanPageUI(){
  // Keep the bill mode button immediately under the manual barcode action.
  page.querySelector('#troqScanManual').after(page.querySelector('#troqScanBill'));
  page.querySelector('#troqScanBill').onclick=()=>{if(!troqInventory().length)return;troqScanBillMode=!troqScanBillMode;troqRenderScanCart();page.querySelector('#troqScanPageStatus').textContent='';if(!troqScanStream)troqStartBarcodeScan(true);};
- page.querySelector('#troqScanCheckout').onclick=()=>{if(!troqScanCart.length)return;troqOpenBillEditor();const rows=[...troqField('troqBillLines').children];for(let i=0;i<troqScanCart.length;i++){const item=troqScanCart[i];if(i>0)troqBillAddProduct();const row=troqField('troqBillLines').children[i];if(!row)continue;const name=row.querySelector('input[data-name],input[type="text"]');const qty=row.querySelector('[data-qty]'),price=row.querySelector('[data-price]');if(name)name.value=item.name;if(qty)qty.value=item.qty;if(price)price.value=item.price;}troqBillRecalculate();};
+ page.querySelector('#troqScanCheckout').onclick=()=>{if(!troqScanCart.length)return;troqCloseBillManualSheet();troqStopBarcodeScan();troqOpenBillEditor();const rows=[...troqField('troqBillLines').children];for(let i=0;i<troqScanCart.length;i++){const item=troqScanCart[i];if(i>0)troqBillAddProduct();const row=troqField('troqBillLines').children[i];if(!row)continue;const name=row.querySelector('[data-product]');const qty=row.querySelector('[data-qty]'),price=row.querySelector('[data-price]');if(name)name.value=item.name;if(qty)qty.value=item.qty;if(price)price.value=item.price;}troqBillRecalculate();};
  page.querySelector('#troqScanRetry').onclick=()=>troqStartBarcodeScan(true);
  page.querySelector('#troqScanManual').onclick=()=>{if(troqScanBillMode)troqOpenBillManualSheet();else troqOpenManualBarcode();};
  return page;
@@ -2907,11 +2928,37 @@ function troqBillManualSheetUI(){
 }
 function troqOpenBillManualSheet(){const sheet=troqBillManualSheetUI();if(sheet.parentElement!==document.body)document.body.appendChild(sheet);sheet.classList.add('open');sheet.querySelector('#troqBillManualInput').value='';troqRenderBillManualSuggestions();sheet.querySelector('#troqBillManualInput').focus();}
 function troqCloseBillManualSheet(){document.getElementById('troqBillManualSheet')?.classList.remove('open');}
-function troqRenderBillManualSuggestions(){const sheet=troqBillManualSheetUI(),q=sheet.querySelector('#troqBillManualInput').value.trim().toLowerCase(),out=sheet.querySelector('#troqBillManualResults');if(!q){out.innerHTML='<p class="troqManualEmpty">Type a barcode or product name.</p>';return;}const matches=troqInventory().filter(p=>String(p.barcode||'').toLowerCase().includes(q)||String(p.name||'').toLowerCase().includes(q)).slice(0,12);out.innerHTML=matches.length?matches.map(p=>'<button type="button" class="troqManualResult" data-manual-product="'+troqEsc(p.id)+'"><span><strong>'+troqEsc(p.name)+'</strong><small>'+troqEsc(p.barcode||'No barcode')+'</small></span><span>'+troqBillMoney(p.price)+'</span></button>').join(''):'<p class="troqManualEmpty">No saved product found.</p>';out.querySelectorAll('[data-manual-product]').forEach(btn=>btn.onclick=()=>{const p=troqInventory().find(item=>item.id===btn.dataset.manualProduct);if(!p)return;troqCloseBillManualSheet();troqHandleScannedCode(p.barcode||'');if(!p.barcode){const line=troqScanCart.find(item=>item.id===p.id);if(line)line.qty++;else troqScanCart.push({id:p.id,name:p.name,qty:1,price:Number(p.price)||0});troqRenderScanCart();}});}
-function troqRenderScanCart(){const page=troqScanPageUI(),bill=page.querySelector('#troqScanBill'),cart=page.querySelector('#troqScanCart'),checkout=page.querySelector('#troqScanCheckout');bill.hidden=!troqInventory().length;bill.classList.toggle('active',troqScanBillMode);bill.textContent=troqScanBillMode?'Add product':'Bill';cart.hidden=!troqScanBillMode;checkout.hidden=!troqScanBillMode||!troqScanCart.length;cart.innerHTML=troqScanBillMode?(troqScanCart.length?troqScanCart.map(p=>'<span>'+troqEsc(p.name)+' × '+p.qty+' · '+troqBillMoney(p.price*p.qty)+'</span>').join(''):''):'';}
+function troqRenderBillManualSuggestions(){const sheet=troqBillManualSheetUI(),q=sheet.querySelector('#troqBillManualInput').value.trim().toLowerCase(),out=sheet.querySelector('#troqBillManualResults');if(!q){out.innerHTML='<p class="troqManualEmpty">Type a barcode or product name.</p>';return;}const matches=troqInventory().filter(p=>String(p.barcode||'').toLowerCase().includes(q)||String(p.name||'').toLowerCase().includes(q)).slice(0,12);out.innerHTML=matches.length?matches.map(p=>'<button type="button" class="troqManualResult" data-manual-product="'+troqEsc(p.id)+'"><span><strong>'+troqEsc(p.name)+'</strong><small>'+troqEsc(p.barcode||'No barcode')+'</small></span><span>'+troqBillMoney(p.price)+'</span></button>').join(''):'<p class="troqManualEmpty">No saved product found.</p>';out.querySelectorAll('[data-manual-product]').forEach(btn=>btn.onclick=()=>{const p=troqInventory().find(item=>item.id===btn.dataset.manualProduct);if(!p)return;troqCloseBillManualSheet();if(p.barcode){troqScanLastAt=0;troqHandleScannedCode(p.barcode);}else{const line=troqScanCart.find(item=>item.id===p.id);if(line)line.qty++;else troqScanCart.push({id:p.id,name:p.name,qty:1,price:Number(p.price)||0});troqRenderScanCart();}});}
+function troqRenderScanCart(){
+ const page=troqScanPageUI(),bill=page.querySelector('#troqScanBill'),cart=page.querySelector('#troqScanCart'),checkout=page.querySelector('#troqScanCheckout');
+ bill.hidden=!troqInventory().length;bill.classList.toggle('active',troqScanBillMode);bill.textContent=troqScanBillMode?'Add product':'Bill';
+ cart.hidden=!troqScanBillMode;checkout.hidden=!troqScanBillMode||!troqScanCart.length;
+ cart.innerHTML=troqScanBillMode?troqScanCart.map(p=>'<div class="troqScanCartLine"><span class="troqScanCartName">'+troqEsc(p.name)+'<small>'+troqBillMoney(p.price*p.qty)+'</small></span><button type="button" data-scan-minus="'+troqEsc(p.id)+'" aria-label="Decrease '+troqEsc(p.name)+'">−</button><strong>'+p.qty+'</strong><button type="button" data-scan-plus="'+troqEsc(p.id)+'" aria-label="Increase '+troqEsc(p.name)+'">+</button></div>').join(''):'';
+ cart.querySelectorAll('[data-scan-minus]').forEach(btn=>btn.onclick=()=>{const i=troqScanCart.findIndex(p=>p.id===btn.dataset.scanMinus);if(i<0)return;if(troqScanCart[i].qty<=1)troqScanCart.splice(i,1);else troqScanCart[i].qty--;troqRenderScanCart();});
+ cart.querySelectorAll('[data-scan-plus]').forEach(btn=>btn.onclick=()=>{const p=troqScanCart.find(p=>p.id===btn.dataset.scanPlus);if(p)p.qty++;troqRenderScanCart();});
+}
+function troqScanToast(message){
+ let toast=document.getElementById('troqScanToast');if(!toast){toast=document.createElement('div');toast.id='troqScanToast';toast.setAttribute('role','status');document.body.appendChild(toast);}
+ toast.textContent=message;toast.classList.add('show');clearTimeout(troqScanToast.timer);troqScanToast.timer=setTimeout(()=>toast.classList.remove('show'),1900);
+}
 function troqOpenScanPage(){const page=troqScanPageUI();page.classList.add('open');troqScanBillMode=false;troqScanCart=[];troqRenderScanCart();page.querySelector('#troqScanPageStatus').textContent='';troqStartBarcodeScan(true);}
 function troqCloseScanPage(){troqCloseBillManualSheet();troqStopBarcodeScan();document.getElementById('troqScanPage')?.classList.remove('open');troqCloseProductForm();}
-function troqHandleScannedCode(barcode){if(!barcode||troqScanBusy)return;const now=Date.now();if(barcode===troqScanLastCode&&now-troqScanLastAt<1700)return;troqScanLastCode=barcode;troqScanLastAt=now;if(troqScanBillMode){const product=troqInventory().find(p=>p.barcode===barcode);const status=troqScanPageUI().querySelector('#troqScanPageStatus');if(!product){status.textContent='Barcode not saved.';return;}const line=troqScanCart.find(p=>p.id===product.id);if(line)line.qty++;else troqScanCart.push({id:product.id,name:product.name,qty:1,price:Number(product.price)||0});status.textContent='';navigator.vibrate?.(65);troqRenderScanCart();return;}troqOpenScanDetails(barcode);}
+function troqHandleScannedCode(barcode){
+ if(!barcode||troqScanBusy)return;
+ const now=Date.now(),same=barcode===troqScanLastCode;
+ // A held barcode is seen many times per second; accept one scan per 1.2s.
+ if(same&&now-troqScanLastAt<1200)return;
+ troqScanLastCode=barcode;troqScanLastAt=now;
+ const product=troqInventory().find(p=>String(p.barcode||'')===String(barcode));
+ if(troqScanBillMode){
+  if(!product){troqScanToast('Barcode not saved');return;}
+  const line=troqScanCart.find(p=>p.id===product.id);
+  if(line)line.qty++;else troqScanCart.push({id:product.id,name:product.name,qty:1,price:Number(product.price)||0});
+  navigator.vibrate?.(65);troqRenderScanCart();troqScanToast(product.name+' × '+(line?line.qty:1));return;
+ }
+ if(product){troqScanToast('Product already exists: '+product.name);return;}
+ troqOpenScanDetails(barcode);
+}
 function troqOpenScanDetails(barcode){if(troqScanBusy)return;troqScanBusy=true;troqStopBarcodeScan();const existing=barcode?troqInventory().find(p=>p.barcode===barcode):null;troqOpenProductForm(existing||null,true);const page=troqInventoryUI();page.dataset.manual='0';if(barcode)page.querySelector('#troqInvBarcode').value=barcode;page.querySelector('#troqInvStatus').textContent=existing?'Product already exists. Update details if needed.':'';}
 function troqOpenManualBarcode(){troqStopBarcodeScan();const page=troqInventoryUI();page.dataset.manual='1';troqOpenProductForm(null,true);page.querySelector('h2').textContent='Enter barcode';page.querySelector('#troqInvBarcode').focus();}
 function troqInventoryUI(){let page=document.getElementById('troqInventoryPage');if(page)return page;page=document.createElement('section');page.id='troqInventoryPage';page.className='troqInventoryPage';page.innerHTML='<div class="troqInventoryHead"><button type="button" id="troqInventoryBack" aria-label="Back">←</button><h2>Add product</h2></div><div class="troqInventoryBody"><div class="troqInventoryCamera" id="troqInventoryCamera" hidden><video id="troqInventoryVideo" autoplay muted playsinline></video></div><button type="button" class="troqInventoryAction" id="troqStartScan">Scan barcode with camera</button><p class="troqInventoryStatus" id="troqScanStatus" role="status"></p><form id="troqInventoryForm"><label>Barcode<input id="troqInvBarcode" type="text" inputmode="numeric" placeholder="Scan or enter barcode" maxlength="100"></label><label>Product name<input id="troqInvName" type="text" required maxlength="180" placeholder="Product name"></label><div class="troqInventoryGrid"><label>Quantity<input id="troqInvQty" type="number" min="0" step="0.001" value="1" required></label><label>Unit<select id="troqInvUnit"><option value="pcs">Pieces</option><option value="kg">kg</option><option value="g">g</option><option value="l">Litre</option><option value="ml">ml</option><option value="pack">Pack</option><option value="box">Box</option></select></label></div><div class="troqInventoryGrid"><label>Selling price (₹)<input id="troqInvPrice" type="number" min="0" step="0.01" required placeholder="0.00"></label><label>Original price (₹)<input id="troqInvOriginal" type="number" min="0" step="0.01" placeholder="Optional"></label></div><label>Discount (%) — optional<input id="troqInvDiscount" type="number" min="0" max="100" step="0.01" placeholder="Optional"></label><button type="submit" id="troqInvSave" class="troqInventoryAction">Save product</button><p id="troqInvStatus" class="troqInventoryStatus" role="status"></p></form></div>';document.body.appendChild(page);page.querySelector('#troqInventoryBack').onclick=()=>{const scanMode=page.dataset.fromScanner==='1';troqCloseProductForm();if(scanMode)troqStartBarcodeScan(true);};page.querySelector('#troqStartScan').onclick=()=>{troqCloseProductForm();troqOpenScanPage();};page.querySelector('#troqInventoryForm').onsubmit=troqSaveProduct;return page;}
