@@ -1133,6 +1133,17 @@ html:has(#mainUI2.active),body:has(#mainUI2.active){overflow-y:auto!important;ov
 .troqDeleteSheet{background:white;border-radius:24px 24px 0 0;width:100%;max-width:620px;padding:24px 22px calc(26px + env(safe-area-inset-bottom));font-family:Outfit,sans-serif}
 .troqDeleteSheet h2{margin:0 0 12px}.troqDeleteSheet p{color:#666;line-height:1.5}
 .troqDeleteActions{display:flex;gap:12px;margin-top:22px}.troqDeleteActions button{flex:1;border:0;border-radius:13px;padding:16px;font:600 16px Outfit,sans-serif}.troqDeleteActions button:last-child{background:#dc284a;color:white}
+/* Clean text-only navigation and legal pages */
+.troqInsightOpen{justify-content:flex-start;gap:12px}
+.troqInsightOpen i{font-size:18px;color:#d83376}
+.troqProfileLegalSection .troqProfileLink{justify-content:flex-start;border-bottom:1px solid #eee}
+.troqProfileLegalSection .troqProfileLink:last-child{border-bottom:0!important}
+.troqLegalBody{line-height:1.65;padding-bottom:55px}
+.troqLegalBody h2{margin:12px 0 4px;font-size:23px}
+.troqLegalBody h3{margin:23px 0 6px;font-size:16px}
+.troqLegalBody p{color:#555;margin:7px 0 12px}
+.troqLegalIcon{width:54px;height:54px;display:grid;place-items:center;border-radius:16px;background:#fff0f6;color:#d83376;font-size:23px}
+.troqLegalBody .troqLegalDraft{font-size:12px;color:#a45c76;margin-bottom:24px}
 </style>
 </head>
 
@@ -1913,7 +1924,7 @@ function troqShowDashboard(tab='home'){
     const bills=Array.isArray(troqMyData.bills)?troqMyData.bills:[];
     const revenue=bills.reduce((n,x)=>n+(Number(x.total_amount)||0),0);
     const productStats=new Map();for(const bill of bills)for(const item of (bill.items||[])){const key=String(item.name||'').trim().toLocaleLowerCase();if(!key)continue;const x=productStats.get(key)||{name:item.name,qty:0,revenue:0,bills:0};x.qty+=Number(item.qty)||0;x.revenue+=Number(item.amount)||0;x.bills++;productStats.set(key,x);}
-    content.innerHTML='<h1>Insights</h1><div class="troqInsightGrid"><div><small>Total bills</small><strong>'+bills.length+'</strong></div><div><small>Revenue</small><strong>'+troqBillMoney(revenue)+'</strong></div></div><button type="button" id="troqOpenProductRevenue" class="troqInsightOpen">Product revenue <span>→</span></button><h2 class="troqInsightTitle">Bill history</h2><input id="troqHistorySearch" class="troqSearch" type="search" placeholder="Search bills, items or customer" aria-label="Search bill history"><div id="troqBillHistory">'+(bills.length?[...bills].reverse().map(x=>'<div class="troqHistoryRow" data-bill-detail="'+troqEsc(x.id)+'" role="button" tabindex="0"><div><strong>'+troqBillMoney(x.total_amount)+'</strong><small>'+troqEsc(new Date(x.created_at).toLocaleString('en-IN'))+' · '+x.items.length+' items</small></div><button type="button" data-reprint="'+troqEsc(x.id)+'">Reprint</button></div>').join(''):'<p>No bills yet.</p>')+'</div><p id="troqReprintStatus" role="status"></p>';
+    content.innerHTML='<h1>Insights</h1><div class="troqInsightGrid"><div><small>Total bills</small><strong>'+bills.length+'</strong></div><div><small>Revenue</small><strong>'+troqBillMoney(revenue)+'</strong></div></div><button type="button" id="troqOpenProductRevenue" class="troqInsightOpen"><i class="fa-solid fa-cash-register" aria-hidden="true"></i> Product revenue</button><h2 class="troqInsightTitle">Bill history</h2><input id="troqHistorySearch" class="troqSearch" type="search" placeholder="Search bills, items or customer" aria-label="Search bill history"><div id="troqBillHistory">'+(bills.length?[...bills].reverse().map(x=>'<div class="troqHistoryRow" data-bill-detail="'+troqEsc(x.id)+'" role="button" tabindex="0"><div><strong>'+troqBillMoney(x.total_amount)+'</strong><small>'+troqEsc(new Date(x.created_at).toLocaleString('en-IN'))+' · '+x.items.length+' items</small></div><button type="button" data-reprint="'+troqEsc(x.id)+'">Reprint</button></div>').join(''):'<p>No bills yet.</p>')+'</div><p id="troqReprintStatus" role="status"></p>';
     troqField('troqOpenProductRevenue').onclick=()=>troqOpenProductRevenueList();
     troqField('troqHistorySearch').oninput=e=>{const q=e.target.value.trim().toLocaleLowerCase();content.querySelectorAll('[data-bill-detail]').forEach(row=>{const bill=bills.find(x=>String(x.id)===row.dataset.billDetail);row.hidden=!!q&&!([bill?.id,bill?.customer?.name,bill?.customer?.mobile,...(bill?.items||[]).map(i=>i.name)].join(' ').toLocaleLowerCase().includes(q));});};
     content.querySelectorAll('[data-product-key]').forEach(btn=>btn.onclick=()=>troqOpenProductRevenue(btn.dataset.productKey));
@@ -1939,7 +1950,7 @@ function troqShowDashboard(tab='home'){
       '<div class="troqProfileStats"><div class="troqProfileStat"><strong>'+stats.count+'</strong><span>Bills</span></div><div class="troqProfileStat"><strong>'+troqEsc(formattedRevenue)+'</strong><span>Revenue</span></div></div>'+
       '<button type="button" class="troqProfileEdit" id="troqEditBusiness"><i class="fa-solid fa-pen-to-square"></i> Edit Profile</button></div>'+
       '<div class="troqProfileSection"><strong>Reprints</strong><p>'+((troqMyData.reprints||[]).length)+'</p></div>'+ 
-      '<h3 class="troqProfileDetailsTitle">Business details</h3><div class="troqProfileSection">'+troqProfileRow('Login mobile',localStorage.getItem('troqMobile'))+troqProfileRow('Business mobile',b.mobile)+troqProfileRow('Business type',b.type)+troqProfileRow('Address',b.address)+troqProfileRow('GSTIN',b.gst)+troqProfileRow('Monthly sales',b.average_sales)+troqProfileRow('Brand font',b.font)+'</div><div class="troqProfileSection"><button class="troqProfileLink" id="troqTerms">Terms &amp; Conditions <span>→</span></button><button class="troqProfileLink" id="troqPrivacy">Privacy Policy <span>→</span></button><button class="troqProfileLink danger" id="troqDeleteAccount">Delete account <span>→</span></button></div><div class="troqProfileLogoutWrap"><button type="button" class="troqProfileLogout" id="troqLogout"><i class="fa-solid fa-arrow-right-from-bracket" aria-hidden="true"></i> Log out</button></div>';
+      '<h3 class="troqProfileDetailsTitle">Business details</h3><div class="troqProfileSection">'+troqProfileRow('Login mobile',localStorage.getItem('troqMobile'))+troqProfileRow('Business mobile',b.mobile)+troqProfileRow('Business type',b.type)+troqProfileRow('Address',b.address)+troqProfileRow('GSTIN',b.gst)+troqProfileRow('Monthly sales',b.average_sales)+troqProfileRow('Brand font',b.font)+'</div><div class="troqProfileSection troqProfileLegalSection"><button class="troqProfileLink" id="troqTerms">Terms &amp; Conditions</button><button class="troqProfileLink" id="troqPrivacy">Privacy Policy</button><button class="troqProfileLink danger" id="troqDeleteAccount">Delete account</button></div><div class="troqProfileLogoutWrap"><button type="button" class="troqProfileLogout" id="troqLogout"><i class="fa-solid fa-arrow-right-from-bracket" aria-hidden="true"></i> Log out</button></div>';
   }else{
     content.innerHTML='<h1>'+title+'</h1><p>'+title+' screen is ready for your next features.</p>';
   }
@@ -1973,7 +1984,24 @@ function troqOpenProductRevenueList(){
  page.querySelector('#troqRevenueListBack').onclick=()=>page.remove();page.querySelector('#troqRevenueSearch').oninput=e=>render(e.target.value.trim().toLocaleLowerCase());render('');
 }
 function troqOpenLegal(title){
- const page=document.createElement('section');page.className='troqProductPage';page.innerHTML='<header class="troqProductPageHead"><button type="button" aria-label="Back">←</button><h2>'+troqEsc(title)+'</h2></header><div class="troqProductPageBody"><p>Official '+troqEsc(title)+' content has not been configured yet. Add your published policy text or URL before release.</p></div>';document.body.appendChild(page);page.querySelector('button').onclick=()=>page.remove();
+ const isTerms=title==='Terms & Conditions';
+ const terms='<p>These terms explain how the TROQ billing app is intended to be used. Review and customize them for your business before publishing.</p>'+
+ '<h3>1. Using TROQ</h3><p>Use the app to create and manage bills for your own business. Keep your login credentials private and enter accurate business information.</p>'+
+ '<h3>2. Bills and product information</h3><p>You are responsible for checking product names, quantities, prices, taxes, customer details and other information before issuing or reprinting a bill.</p>'+
+ '<h3>3. Customer information</h3><p>Only enter customer names, mobile numbers and addresses when needed for billing and when you have an appropriate basis to collect them.</p>'+
+ '<h3>4. Account and data</h3><p>Your business settings and bills are associated with your account. You can request account deletion from Profile. Deletion may be irreversible.</p>'+
+ '<h3>5. Availability</h3><p>Internet access may be required to load or save information. Check that each bill has saved successfully before relying on it.</p>'+
+ '<h3>6. Support and changes</h3><p>Business contact details, support channels and the effective date should be added here before these terms are published.</p>';
+ const privacy='<p>This draft describes information the TROQ app may handle. Review and customize it to reflect your actual practices before publishing.</p>'+
+ '<h3>1. Information entered</h3><p>The app may process account mobile numbers, business names and logos, addresses, tax or FSSAI numbers, bill items and optional customer billing details.</p>'+
+ '<h3>2. How information is used</h3><p>Information is used to provide account access, save bill settings, create bills, show sales insights and reprint existing bills.</p>'+
+ '<h3>3. Storage</h3><p>Account-related business settings and bills are saved through the app backend in Supabase. Browser session information may be used to keep you signed in.</p>'+
+ '<h3>4. Customer billing details</h3><p>Customer name, mobile and address fields are optional settings. Collect only information needed for the bill and protect it from unauthorized access.</p>'+
+ '<h3>5. Account deletion</h3><p>The Delete account option in Profile requests removal of your account and saved app data. Confirm carefully because this action cannot be undone.</p>'+
+ '<h3>6. Contact and updates</h3><p>Add your actual privacy contact, retention rules, any third-party disclosures and the effective date before publishing this policy.</p>';
+ const page=document.createElement('section');page.className='troqProductPage troqLegalPage';
+ page.innerHTML='<header class="troqProductPageHead"><button type="button" aria-label="Back"><i class="fa-solid fa-arrow-left"></i></button><h2>'+troqEsc(title)+'</h2></header><div class="troqProductPageBody troqLegalBody"><div class="troqLegalIcon"><i class="fa-solid fa-cash-register" aria-hidden="true"></i></div><h2>'+troqEsc(title)+'</h2><p class="troqLegalDraft">Draft content — customize before publishing.</p>'+(isTerms?terms:privacy)+'</div>';
+ document.body.appendChild(page);page.querySelector('button').onclick=()=>page.remove();
 }
 function troqOpenDeleteSheet(){
  const overlay=document.createElement('div');overlay.className='troqDeleteOverlay';overlay.innerHTML='<div class="troqDeleteSheet" role="dialog" aria-modal="true" aria-labelledby="troqDeleteTitle"><h2 id="troqDeleteTitle">Delete account?</h2><p>This permanently deletes your account and saved business and bill data. This cannot be undone.</p><p id="troqDeleteError" role="status"></p><div class="troqDeleteActions"><button type="button" id="troqDeleteNo">No</button><button type="button" id="troqDeleteYes">Yes, delete</button></div></div>';
