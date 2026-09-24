@@ -978,6 +978,17 @@ body{
 }
 #troqReceiptPrintArea .troqPrintSubtext{text-align:center!important;font:12px/1.4 'Nunito',sans-serif!important;white-space:normal;overflow-wrap:anywhere;margin:3px 0 7px}
 
+/* SEPARATE STEP 7 — BUSINESS REVIEW */
+.troqReviewCard{border:1px solid #f4dce7;border-radius:22px;padding:20px;background:linear-gradient(180deg,#fff6fa,#fff);box-shadow:0 10px 30px rgba(255,35,128,.06);margin-top:22px}
+.troqReviewHead{display:flex;align-items:center;gap:15px;padding-bottom:18px;border-bottom:1px solid #f2e5eb}
+.troqReviewHead img{width:72px;height:72px;flex:none;object-fit:contain;border-radius:15px;background:white;border:1px solid #f1dce6;padding:6px}
+.troqReviewHead img[hidden]{display:none!important}
+.troqReviewHead h2{font-size:23px;color:#242424;overflow-wrap:anywhere;line-height:1.25}
+.troqReviewHead p{font-size:13px;color:#777;margin-top:5px}
+.troqReviewEyebrow{display:block;font-size:10px;font-weight:700;letter-spacing:1.5px;color:#ff2380;margin-bottom:6px}
+.troqReviewCard .troqConfirmDetails{border:0;background:transparent;padding:8px 0 0}
+.troqReviewCard .troqConfirmDetails div{padding:13px 0;align-items:center}
+.troqReviewCard .troqConfirmDetails div:last-child{border-bottom:0}
 /* TROQ LOGGED-IN BUSINESS SETUP */
 #mainUI2{min-height:100dvh;background:#fff;font-family:'Outfit',sans-serif}
 .troqSetup{max-width:500px;margin:0 auto;padding:28px 22px 38px;min-height:100dvh}
@@ -1233,7 +1244,7 @@ body{
 <!-- MAIN UI 2: LOGGED-IN USER -->
 <div id="mainUI2" class="mainUI">
     <section id="troqSetup" class="troqSetup">
-      <div class="troqSetupHead"><span class="troqBrand">TROQ</span><span id="troqSetupCount">Step 1 of 6</span></div>
+      <div class="troqSetupHead"><span class="troqBrand">TROQ</span><span id="troqSetupCount">Step 1 of 7</span></div>
       <div class="troqProgress"><span id="troqProgressFill"></span></div>
       <form id="troqBusinessForm" novalidate>
         <div class="troqSetupStep active" data-step="0"><img class="troqStepImage" src="bu.webp" alt="Business setup"><h1>What's your business name?</h1><p>Let's set up your store.</p><label for="bizName">Business name *</label><input id="bizName" maxlength="100" required placeholder="Enter business name"><label for="bizFont">Choose brand font</label><select id="bizFont"><option value="Outfit">Outfit</option><option value="Poppins">Poppins</option><option value="Bungee">Bungee</option><option value="Anton">Anton</option><option value="Montserrat">Montserrat</option><option value="Playfair Display">Playfair Display</option><option value="Pacifico">Pacifico</option><option value="Lobster">Lobster</option><option value="Righteous">Righteous</option><option value="DM Serif Display">DM Serif Display</option></select><div id="bizFontPreview" class="troqBrandPreview">Your Business</div></div>
@@ -1241,7 +1252,8 @@ body{
         <div class="troqSetupStep" data-step="2"><img class="troqStepImage" src="bu.webp" alt="Business setup"><h1>Business address</h1><p>Enter the address to show on receipts.</p><label for="bizAddress">Store address *</label><textarea id="bizAddress" rows="4" maxlength="500" required placeholder="Shop no., street, town, PIN code"></textarea></div>
         <div class="troqSetupStep" data-step="3"><img class="troqStepImage" src="bu.webp" alt="Business setup"><h1>What type of business?</h1><p>Choose your store category.</p><label for="bizType">Store type *</label><select id="bizType"><option value="">Select business type</option><option>Food business</option><option>Grocery / Supermarket</option><option>Medical / Pharmacy</option><option>Clothing / Fashion</option><option>Electronics</option><option>Bakery / Café</option><option>Restaurant</option><option>General store</option><option>Other</option></select><div id="bizOtherWrap" hidden><label for="bizOther">Specify your business</label><input id="bizOther" maxlength="100" placeholder="Your business type"></div></div>
         <div class="troqSetupStep" data-step="4"><img class="troqStepImage" src="bu.webp" alt="Business setup"><h1>A few more details</h1><p>GST is optional. Sales estimate helps personalize your dashboard.</p><label for="bizGST">GST number (optional)</label><input id="bizGST" maxlength="15" autocapitalize="characters" placeholder="15-character GSTIN"><label for="bizSales">Average monthly sales (optional)</label><select id="bizSales"><option value="">Prefer not to say</option><option value="Under ₹25,000">Under ₹25,000</option><option value="₹25,000–₹1 lakh">₹25,000–₹1 lakh</option><option value="₹1–5 lakh">₹1–5 lakh</option><option value="₹5–10 lakh">₹5–10 lakh</option><option value="Above ₹10 lakh">Above ₹10 lakh</option></select></div>
-        <div class="troqSetupStep" data-step="5"><img class="troqStepImage" src="bu.webp" alt="Business setup"><h1>Add your business logo</h1><p>Optional. You can add it later too.</p><label class="troqUploadLabel" for="bizLogo"><span>Choose logo (PNG, JPG or WebP · max 2 MB)</span></label><input id="bizLogo" type="file" accept="image/png,image/jpeg,image/webp" hidden><img id="bizLogoPreview" class="troqBizLogoPreview" hidden alt="Logo preview"><h2 class="troqConfirmTitle">Confirm business details</h2><div id="troqConfirmDetails" class="troqConfirmDetails"></div></div>
+        <div class="troqSetupStep" data-step="5"><img class="troqStepImage" src="bu.webp" alt="Business setup"><h1>Add your business logo</h1><p>Optional. You can add it later too.</p><label class="troqUploadLabel" for="bizLogo"><span>Choose logo (PNG, JPG or WebP · max 2 MB)</span></label><input id="bizLogo" type="file" accept="image/png,image/jpeg,image/webp" hidden><img id="bizLogoPreview" class="troqBizLogoPreview" hidden alt="Logo preview"></div>
+        <div class="troqSetupStep" data-step="6"><img class="troqStepImage" src="bu.webp" alt="Business setup"><h1>Review your business</h1><p>Check everything before saving your business.</p><div class="troqReviewCard"><div class="troqReviewHead"><img id="troqReviewLogo" hidden alt="Business logo"><div><span class="troqReviewEyebrow">YOUR BUSINESS</span><h2 id="troqReviewName"></h2><p id="troqReviewType"></p></div></div><div id="troqConfirmDetails" class="troqConfirmDetails"></div></div></div>
         <p id="troqSetupError" class="troqSetupError" role="alert" hidden></p>
         <div class="troqSetupActions"><button type="button" id="troqSetupBack" class="troqBackBtn" hidden>Back</button><button type="button" id="troqSetupNext" class="troqNextBtn">Next</button></div>
       </form>
@@ -1648,10 +1660,30 @@ troqField('bizType').addEventListener('change',()=>troqField('bizOtherWrap').hid
 troqField('bizLogo').addEventListener('change',async e=>{const f=e.target.files?.[0];if(!f)return; if(!['image/png','image/jpeg','image/webp'].includes(f.type)||f.size>2*1024*1024){troqSetupError('Choose PNG, JPG or WebP under 2 MB');e.target.value='';troqBizLogoFile=null;return;}troqBizLogoFile=f;const reader=new FileReader();reader.onload=()=>{troqBizLogoData=reader.result;troqField('bizLogoPreview').src=troqBizLogoData;troqField('bizLogoPreview').hidden=false;troqSetupError('');};reader.readAsDataURL(f);});
 function troqSetupError(message){const e=troqField('troqSetupError');e.textContent=message;e.hidden=!message;}
 function troqValidateStep(){const b=troqBusinessValue();if(troqSetupStep===0&&!b.name)return 'Enter your business name';if(troqSetupStep===1&&!/^[0-9]{10}$/.test(b.mobile))return 'Enter a valid 10-digit business mobile number';if(troqSetupStep===2&&!b.address)return 'Enter your business address';if(troqSetupStep===3&&!b.type)return 'Select your business type';if(troqSetupStep===4&&b.gst&&!/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/.test(b.gst))return 'Enter a valid GSTIN or leave it blank';return '';}
-function troqShowSetupStep(n){troqSetupStep=n;troqSetupSteps.forEach((el,i)=>el.classList.toggle('active',i===n));troqField('troqSetupCount').textContent='Step '+(n+1)+' of 6';troqField('troqProgressFill').style.width=((n+1)/6*100)+'%';troqField('troqSetupBack').hidden=n===0;troqField('troqSetupNext').textContent=n===5?'Confirm & Save':'Next';troqSetupError('');if(n===5){const b=troqBusinessValue();const rows=[['Business',b.name],['Font',b.font],['Mobile',b.mobile],['Address',b.address],['Type',b.type],['GST',b.gst||'Not provided'],['Avg. monthly sales',b.average_sales||'Not provided'],['Logo',b.logo?'Added':'Not added']];troqField('troqConfirmDetails').innerHTML=rows.map(([k,v])=>'<div><span>'+troqEsc(k)+'</span><strong>'+troqEsc(v)+'</strong></div>').join('');}}
+function troqShowSetupStep(n){
+  troqSetupStep=n;
+  troqSetupSteps.forEach((el,i)=>el.classList.toggle('active',i===n));
+  troqField('troqSetupCount').textContent='Step '+(n+1)+' of 7';
+  troqField('troqProgressFill').style.width=((n+1)/7*100)+'%';
+  troqField('troqSetupBack').hidden=n===0;
+  troqField('troqSetupNext').textContent=n===6?'Confirm & Save':'Next';
+  troqSetupError('');
+  if(n===6){
+    const b=troqBusinessValue();
+    const logo=troqField('troqReviewLogo');
+    logo.hidden=!b.logo;
+    if(b.logo)logo.src=b.logo;
+    const name=troqField('troqReviewName');
+    name.textContent=b.name;
+    name.style.fontFamily='"'+b.font+'",sans-serif';
+    troqField('troqReviewType').textContent=b.type;
+    const rows=[['Brand font',b.font],['Business mobile',b.mobile],['Address',b.address],['Business type',b.type],['GSTIN',b.gst||'Not provided'],['Monthly sales',b.average_sales||'Not provided'],['Business logo',b.logo?'Added':'Not added']];
+    troqField('troqConfirmDetails').innerHTML=rows.map(([k,v])=>'<div><span>'+troqEsc(k)+'</span><strong>'+troqEsc(v)+'</strong></div>').join('');
+  }
+}
 troqField('troqSetupBack').addEventListener('click',()=>troqShowSetupStep(Math.max(0,troqSetupStep-1)));
 troqField('troqBusinessForm').addEventListener('submit',e=>e.preventDefault());
-troqField('troqSetupNext').addEventListener('click',async()=>{const error=troqValidateStep();if(error){troqSetupError(error);return;}if(troqSetupStep<5){troqShowSetupStep(troqSetupStep+1);return;}const btn=troqField('troqSetupNext');btn.disabled=true;btn.innerHTML='<span class="troqSmallSpinner" aria-label="Saving"></span>';try{const b=troqBusinessValue();
+troqField('troqSetupNext').addEventListener('click',async()=>{const error=troqValidateStep();if(error){troqSetupError(error);return;}if(troqSetupStep<6){troqShowSetupStep(troqSetupStep+1);return;}const btn=troqField('troqSetupNext');btn.disabled=true;btn.innerHTML='<span class="troqSmallSpinner" aria-label="Saving"></span>';try{const b=troqBusinessValue();
         const token=sessionStorage.getItem('troqUserToken');
         if(!token)throw new Error('Login required');
         // Direct browser upload: prototype only; see SQL policy warning.
