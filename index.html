@@ -1293,12 +1293,13 @@ body{
 </section>
 <div id="troqReceiptPrintArea" aria-hidden="true"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-
-/* TEST ACCOUNT */
-
-const TEST_MOBILE = "8332881902";
-const TEST_PASSWORD = "123456";
+/* SUPABASE PUBLIC PROJECT SETTINGS */
+const TROQ_SUPABASE_URL = "https://wxnmflkgxjnjinyawghf.supabase.co";
+const TROQ_SUPABASE_KEY = "sb_publishable_bXrJEV0B56dRpAX-cEyNVg_QxR2adg4";
+const troqDb = window.supabase.createClient(TROQ_SUPABASE_URL, TROQ_SUPABASE_KEY);
+let troqLoginBusy = false;
 
 /* MAIN UI PAGES */
 
@@ -1497,89 +1498,50 @@ passwordInput.addEventListener(
 
 /* PROCEED / LOGIN */
 
-button.addEventListener("click",()=>{
-
-    if(button.disabled)return;
-
+button.addEventListener("click", async()=>{
+    if(button.disabled || troqLoginBusy) return;
     if(step === "mobile"){
-
         step = "password";
-
-        mobileNumberText.textContent =
-        "+91 " + mobileInput.value;
-
+        mobileNumberText.textContent = "+91 " + mobileInput.value;
         mobileDisplay.classList.add("show");
-
-        loginTitle.textContent =
-        "Enter your password";
-
+        loginTitle.textContent = "Enter your password";
         mobileBox.style.display = "none";
-
         passwordBox.classList.add("show");
-
         button.textContent = "Login";
-
         updateButton();
-
         openSheet();
-
         passwordInput.focus();
-
-    }else{
-
-        const enteredMobile =
-        mobileInput.value.trim();
-
-        const enteredPassword =
-        passwordInput.value;
-
-        /* CORRECT LOGIN */
-
-        if(
-            enteredMobile === TEST_MOBILE &&
-            enteredPassword === TEST_PASSWORD
-        ){
-
-            hideError();
-
-            sessionStorage.setItem(
-                "troqLogin",
-                "true"
-            );
-
-            sessionStorage.setItem(
-                "troqMobile",
-                enteredMobile
-            );
-
-            openMainUI(2);
-
-        }
-
-        /* WRONG MOBILE NUMBER */
-
-        else if(
-            enteredMobile !== TEST_MOBILE
-        ){
-
-            showError(
-                "Mobile number not registered"
-            );
-
-        }
-
-        /* WRONG PASSWORD */
-
-        else{
-
-            showError(
-                "Wrong password"
-            );
-
-        }
-
+        return;
     }
-
+    const enteredMobile = mobileInput.value.trim();
+    const enteredPassword = passwordInput.value;
+    troqLoginBusy = true;
+    button.disabled = true;
+    button.textContent = "Checking...";
+    hideError();
+    try{
+        const {data,error} = await troqDb.rpc("troq_user_mobile_login",{
+            p_mobile: enteredMobile,
+            p_password: enteredPassword
+        });
+        if(error) throw error;
+        if(!data || !data.token || !data.user_id){
+            throw new Error("Invalid mobile number or password");
+        }
+        sessionStorage.setItem("troqLogin", "true");
+        sessionStorage.setItem("troqMobile", enteredMobile);
+        sessionStorage.setItem("troqUserId", data.user_id);
+        sessionStorage.setItem("troqUserToken", data.token);
+        passwordInput.value = "";
+        hideError();
+        openMainUI(2);
+    }catch(err){
+        showError(err.message || "Login failed. Please try again.");
+    }finally{
+        troqLoginBusy = false;
+        button.textContent = "Login";
+        updateButton();
+    }
 });
 
 /* EDIT MOBILE */
@@ -1618,6 +1580,8 @@ skipButton.addEventListener("click",()=>{
     sessionStorage.removeItem("troqLogin");
 
     sessionStorage.removeItem("troqMobile");
+    sessionStorage.removeItem("troqUserId");
+    sessionStorage.removeItem("troqUserToken");
 
     openMainUI(1);
 
