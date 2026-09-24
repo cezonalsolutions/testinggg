@@ -1029,7 +1029,7 @@ body{
 .troqProfileTop{padding:24px 22px 18px;background:#fff}
 .troqProfileTop h1{text-align:center;font-size:23px;margin:0 0 24px}
 .troqProfileIdentity{display:flex;align-items:center;gap:19px}
-.troqProfileIdentity .troqProfileLogo,.troqProfileIdentity .troqProfileFallback{flex:none;width:94px;height:94px;border-radius:50%;object-fit:cover;border:1px solid #eee;background:#fff5f9}
+.troqProfileIdentity .troqProfileLogo,.troqProfileIdentity .troqProfileFallback{flex:none;width:94px;height:94px;border-radius:18px;object-fit:contain;padding:7px;border:1px solid #eee;background:#fff5f9}
 .troqProfileIdentity .troqProfileFallback{display:grid;place-items:center;font-size:35px;font-weight:700;color:#ff2380}
 .troqProfileIdentityText{min-width:0;flex:1}
 .troqProfileIdentityText h2{font-size:22px;line-height:1.25;overflow-wrap:anywhere}
@@ -1041,6 +1041,7 @@ body{
 .troqProfileEdit{margin-top:19px;background:#fff;color:#242424;border:1px solid #dedede;border-radius:11px}
 .troqProfileDetailsTitle{padding:22px 22px 0;font-size:18px;font-weight:600}
 .troqProfilePage .troqProfileSection{margin:13px 22px 0}
+.troqProfileLogoutWrap{padding:18px 22px 25px}.troqProfileLogout{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:54px;border:1px solid #ffd4e5;border-radius:13px;background:#fff4f8;color:#c81d61;font:600 16px 'Outfit',sans-serif;cursor:pointer}.troqProfileLogout:active{opacity:.75}
 .troqHomeCreate{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:62px;margin-top:25px;border:0;border-radius:16px;background:#ff2380;color:white;font:600 19px 'Outfit',sans-serif;cursor:pointer}
 .troqHomeCreate i{font-size:20px}
 </style>
@@ -1776,15 +1777,26 @@ function troqShowDashboard(tab='home'){
     const avatar=logo?'<img class="troqProfileLogo" src="'+troqEsc(logo)+'" alt="Business logo">':'<div class="troqProfileFallback">'+troqEsc((b.name||'T').charAt(0).toUpperCase())+'</div>';
     const stats=troqBillStats();
     const formattedRevenue=new Intl.NumberFormat('en-IN',{style:'currency',currency:'INR',maximumFractionDigits:2}).format(stats.revenue);
-    content.innerHTML='<div class="troqProfileTop"><h1>Profile</h1><div class="troqProfileIdentity">'+avatar+'<div class="troqProfileIdentityText"><h2 style="font-family:&quot;'+troqEsc(b.font||'Outfit')+'&quot;,sans-serif">'+troqEsc(b.name||'My Business')+'</h2><p>'+troqEsc(b.subtext||'')+'</p><p>'+troqEsc(b.type||'')+'</p></div></div>'+
+    content.innerHTML='<div class="troqProfileTop"><div class="troqProfileIdentity">'+avatar+'<div class="troqProfileIdentityText"><h2 style="font-family:&quot;'+troqEsc(b.font||'Outfit')+'&quot;,sans-serif">'+troqEsc(b.name||'My Business')+'</h2><p>'+troqEsc(b.subtext||'')+'</p><p>'+troqEsc(b.type||'')+'</p></div></div>'+
       '<div class="troqProfileStats"><div class="troqProfileStat"><strong>'+stats.count+'</strong><span>Bills</span></div><div class="troqProfileStat"><strong>'+troqEsc(formattedRevenue)+'</strong><span>Revenue</span></div></div>'+
       '<button type="button" class="troqProfileEdit" id="troqEditBusiness"><i class="fa-solid fa-pen-to-square"></i> Edit Profile</button></div>'+
-      '<h3 class="troqProfileDetailsTitle">Business details</h3><div class="troqProfileSection">'+troqProfileRow('Login mobile',sessionStorage.getItem('troqMobile'))+troqProfileRow('Business mobile',b.mobile)+troqProfileRow('Business type',b.type)+troqProfileRow('Address',b.address)+troqProfileRow('GSTIN',b.gst)+troqProfileRow('Monthly sales',b.average_sales)+troqProfileRow('Brand font',b.font)+'</div>';
+      '<h3 class="troqProfileDetailsTitle">Business details</h3><div class="troqProfileSection">'+troqProfileRow('Login mobile',sessionStorage.getItem('troqMobile'))+troqProfileRow('Business mobile',b.mobile)+troqProfileRow('Business type',b.type)+troqProfileRow('Address',b.address)+troqProfileRow('GSTIN',b.gst)+troqProfileRow('Monthly sales',b.average_sales)+troqProfileRow('Brand font',b.font)+'</div><div class="troqProfileLogoutWrap"><button type="button" class="troqProfileLogout" id="troqLogout"><i class="fa-solid fa-arrow-right-from-bracket" aria-hidden="true"></i> Log out</button></div>';
   }else{
     content.innerHTML='<h1>'+title+'</h1><p>'+title+' screen is ready for your next features.</p>';
   }
   const edit=troqField('troqEditBusiness');
   if(edit)edit.onclick=()=>{troqFillBusiness(troqMyData.business);troqDashboardEl.hidden=true;troqSetupEl.hidden=false;troqShowSetupStep(0);};
+  const logout=troqField('troqLogout');
+  if(logout)logout.onclick=()=>{
+    sessionStorage.removeItem('troqLogin');
+    sessionStorage.removeItem('troqMobile');
+    sessionStorage.removeItem('troqUserId');
+    sessionStorage.removeItem('troqUserToken');
+    troqMyData={};
+    troqBizLogoFile=null;
+    troqBizLogoData='';
+    location.reload();
+  };
 }
 document.querySelectorAll('.troqBottomNav button').forEach(b=>b.addEventListener('click',()=>troqShowDashboard(b.dataset.tab)));
 function troqStartUserBusiness(){const b=troqMyData?.business;if(b?.name){troqShowDashboard('home');return;}troqDashboardEl.hidden=true;troqSetupEl.hidden=false;troqFillBusiness(b);troqShowSetupStep(0);}
