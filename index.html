@@ -1119,6 +1119,20 @@ html:has(#mainUI2.active),body:has(#mainUI2.active){overflow-y:auto!important;ov
 .troqNestedSetting{margin-left:16px;}
 .troqCustomerFieldToggles{padding:0 0 8px 8px;border-left:2px solid #f1d9e6;margin-left:14px;}
 .troqCustomerFieldToggles[hidden],.troqNestedSetting[hidden]{display:none!important;}
+
+/* Full-width settings input, insights navigation and searchable lists */
+#troqFSSAISetting{display:block!important;margin:0;padding:12px 16px 16px;width:100%;box-sizing:border-box}
+#troqFSSAISetting[hidden]{display:none!important}
+#troqFSSAINumber{display:block;width:100%!important;max-width:none!important;min-width:0;box-sizing:border-box;height:48px}
+.troqInsightOpen{width:100%;padding:17px;border:1px solid #eee;background:#fff;border-radius:15px;text-align:left;font:600 16px Outfit,sans-serif;display:flex;justify-content:space-between;align-items:center;margin:18px 0}
+.troqSearch{display:block;width:100%;box-sizing:border-box;border:1px solid #e6e6e6;border-radius:12px;padding:13px 15px;margin:12px 0 16px;font:15px Outfit,sans-serif;background:#fff}
+.troqProfileLink{display:flex;justify-content:space-between;width:100%;padding:17px;border:0;border-bottom:1px solid #eee;background:white;text-align:left;font:500 15px Outfit,sans-serif;color:#222}
+.troqProfileLink.danger{color:#c32742}
+.troqDeleteOverlay{position:fixed;inset:0;z-index:5000;background:#0008;display:flex;align-items:flex-end;justify-content:center}
+.troqDeleteOverlay[hidden]{display:none!important}
+.troqDeleteSheet{background:white;border-radius:24px 24px 0 0;width:100%;max-width:620px;padding:24px 22px calc(26px + env(safe-area-inset-bottom));font-family:Outfit,sans-serif}
+.troqDeleteSheet h2{margin:0 0 12px}.troqDeleteSheet p{color:#666;line-height:1.5}
+.troqDeleteActions{display:flex;gap:12px;margin-top:22px}.troqDeleteActions button{flex:1;border:0;border-radius:13px;padding:16px;font:600 16px Outfit,sans-serif}.troqDeleteActions button:last-child{background:#dc284a;color:white}
 </style>
 </head>
 
@@ -1899,7 +1913,9 @@ function troqShowDashboard(tab='home'){
     const bills=Array.isArray(troqMyData.bills)?troqMyData.bills:[];
     const revenue=bills.reduce((n,x)=>n+(Number(x.total_amount)||0),0);
     const productStats=new Map();for(const bill of bills)for(const item of (bill.items||[])){const key=String(item.name||'').trim().toLocaleLowerCase();if(!key)continue;const x=productStats.get(key)||{name:item.name,qty:0,revenue:0,bills:0};x.qty+=Number(item.qty)||0;x.revenue+=Number(item.amount)||0;x.bills++;productStats.set(key,x);}
-    content.innerHTML='<h1>Insights</h1><div class="troqInsightGrid"><div><small>Total bills</small><strong>'+bills.length+'</strong></div><div><small>Revenue</small><strong>'+troqBillMoney(revenue)+'</strong></div></div><h2 class="troqInsightTitle">Product revenue</h2><div id="troqProductRevenue">'+(productStats.size?[...productStats.entries()].map(([key,x])=>'<button type="button" class="troqInsightProduct" data-product-key="'+troqEsc(key)+'"><span><strong>'+troqEsc(x.name)+'</strong><small>'+x.qty+' sold · '+x.bills+' bill entries</small></span><strong>'+troqBillMoney(x.revenue)+' →</strong></button>').join(''):'<p>No sales yet.</p>')+'</div><h2 class="troqInsightTitle">Bill history</h2><div id="troqBillHistory">'+(bills.length?[...bills].reverse().map(x=>'<div class="troqHistoryRow" data-bill-detail="'+troqEsc(x.id)+'" role="button" tabindex="0"><div><strong>'+troqBillMoney(x.total_amount)+'</strong><small>'+troqEsc(new Date(x.created_at).toLocaleString('en-IN'))+' · '+x.items.length+' items</small></div><button type="button" data-reprint="'+troqEsc(x.id)+'">Reprint</button></div>').join(''):'<p>No bills yet.</p>')+'</div><p id="troqReprintStatus" role="status"></p>';
+    content.innerHTML='<h1>Insights</h1><div class="troqInsightGrid"><div><small>Total bills</small><strong>'+bills.length+'</strong></div><div><small>Revenue</small><strong>'+troqBillMoney(revenue)+'</strong></div></div><button type="button" id="troqOpenProductRevenue" class="troqInsightOpen">Product revenue <span>→</span></button><h2 class="troqInsightTitle">Bill history</h2><input id="troqHistorySearch" class="troqSearch" type="search" placeholder="Search bills, items or customer" aria-label="Search bill history"><div id="troqBillHistory">'+(bills.length?[...bills].reverse().map(x=>'<div class="troqHistoryRow" data-bill-detail="'+troqEsc(x.id)+'" role="button" tabindex="0"><div><strong>'+troqBillMoney(x.total_amount)+'</strong><small>'+troqEsc(new Date(x.created_at).toLocaleString('en-IN'))+' · '+x.items.length+' items</small></div><button type="button" data-reprint="'+troqEsc(x.id)+'">Reprint</button></div>').join(''):'<p>No bills yet.</p>')+'</div><p id="troqReprintStatus" role="status"></p>';
+    troqField('troqOpenProductRevenue').onclick=()=>troqOpenProductRevenueList();
+    troqField('troqHistorySearch').oninput=e=>{const q=e.target.value.trim().toLocaleLowerCase();content.querySelectorAll('[data-bill-detail]').forEach(row=>{const bill=bills.find(x=>String(x.id)===row.dataset.billDetail);row.hidden=!!q&&!([bill?.id,bill?.customer?.name,bill?.customer?.mobile,...(bill?.items||[]).map(i=>i.name)].join(' ').toLocaleLowerCase().includes(q));});};
     content.querySelectorAll('[data-product-key]').forEach(btn=>btn.onclick=()=>troqOpenProductRevenue(btn.dataset.productKey));
     content.querySelectorAll('[data-bill-detail]').forEach(row=>{
       const open=()=>{const bill=bills.find(x=>x.id===row.dataset.billDetail);if(bill)troqOpenBillDetail(bill);};
@@ -1923,9 +1939,14 @@ function troqShowDashboard(tab='home'){
       '<div class="troqProfileStats"><div class="troqProfileStat"><strong>'+stats.count+'</strong><span>Bills</span></div><div class="troqProfileStat"><strong>'+troqEsc(formattedRevenue)+'</strong><span>Revenue</span></div></div>'+
       '<button type="button" class="troqProfileEdit" id="troqEditBusiness"><i class="fa-solid fa-pen-to-square"></i> Edit Profile</button></div>'+
       '<div class="troqProfileSection"><strong>Reprints</strong><p>'+((troqMyData.reprints||[]).length)+'</p></div>'+ 
-      '<h3 class="troqProfileDetailsTitle">Business details</h3><div class="troqProfileSection">'+troqProfileRow('Login mobile',localStorage.getItem('troqMobile'))+troqProfileRow('Business mobile',b.mobile)+troqProfileRow('Business type',b.type)+troqProfileRow('Address',b.address)+troqProfileRow('GSTIN',b.gst)+troqProfileRow('Monthly sales',b.average_sales)+troqProfileRow('Brand font',b.font)+'</div><div class="troqProfileLogoutWrap"><button type="button" class="troqProfileLogout" id="troqLogout"><i class="fa-solid fa-arrow-right-from-bracket" aria-hidden="true"></i> Log out</button></div>';
+      '<h3 class="troqProfileDetailsTitle">Business details</h3><div class="troqProfileSection">'+troqProfileRow('Login mobile',localStorage.getItem('troqMobile'))+troqProfileRow('Business mobile',b.mobile)+troqProfileRow('Business type',b.type)+troqProfileRow('Address',b.address)+troqProfileRow('GSTIN',b.gst)+troqProfileRow('Monthly sales',b.average_sales)+troqProfileRow('Brand font',b.font)+'</div><div class="troqProfileSection"><button class="troqProfileLink" id="troqTerms">Terms &amp; Conditions <span>→</span></button><button class="troqProfileLink" id="troqPrivacy">Privacy Policy <span>→</span></button><button class="troqProfileLink danger" id="troqDeleteAccount">Delete account <span>→</span></button></div><div class="troqProfileLogoutWrap"><button type="button" class="troqProfileLogout" id="troqLogout"><i class="fa-solid fa-arrow-right-from-bracket" aria-hidden="true"></i> Log out</button></div>';
   }else{
     content.innerHTML='<h1>'+title+'</h1><p>'+title+' screen is ready for your next features.</p>';
+  }
+  if(tab==='profile'){
+    troqField('troqTerms').onclick=()=>troqOpenLegal('Terms & Conditions');
+    troqField('troqPrivacy').onclick=()=>troqOpenLegal('Privacy Policy');
+    troqField('troqDeleteAccount').onclick=troqOpenDeleteSheet;
   }
   const edit=troqField('troqEditBusiness');
   if(edit)edit.onclick=()=>{troqFillBusiness(troqMyData.business);troqDashboardEl.hidden=true;troqSetupEl.hidden=false;troqShowSetupStep(0);};
@@ -1943,6 +1964,22 @@ function troqShowDashboard(tab='home'){
 }
 
 /* CREATE BILL: token-scoped database save, then system print dialog */
+function troqOpenProductRevenueList(){
+ const bills=Array.isArray(troqMyData.bills)?troqMyData.bills:[];
+ const stats=new Map();for(const bill of bills)for(const item of bill.items||[]){const key=String(item.name||'').trim().toLocaleLowerCase();if(!key)continue;const x=stats.get(key)||{name:item.name,qty:0,revenue:0};x.qty+=Number(item.qty)||0;x.revenue+=Number(item.amount)||0;stats.set(key,x);}
+ let page=document.getElementById('troqProductRevenueList');if(!page){page=document.createElement('section');page.id='troqProductRevenueList';page.className='troqProductPage';document.body.appendChild(page);}
+ const render=q=>{const filtered=[...stats].filter(([key,x])=>!q||key.includes(q));const target=page.querySelector('#troqRevenueResults');target.innerHTML=filtered.length?filtered.map(([key,x])=>'<button type="button" class="troqInsightProduct" data-product-key="'+troqEsc(key)+'"><span><strong>'+troqEsc(x.name)+'</strong><small>'+x.qty+' sold</small></span><strong>'+troqBillMoney(x.revenue)+'</strong></button>').join(''):'<p>No sales yet.</p>';target.querySelectorAll('[data-product-key]').forEach(btn=>btn.onclick=()=>troqOpenProductRevenue(btn.dataset.productKey));};
+ page.innerHTML='<header class="troqProductPageHead"><button type="button" id="troqRevenueListBack">←</button><h2>Product revenue</h2></header><div class="troqProductPageBody"><input id="troqRevenueSearch" class="troqSearch" type="search" placeholder="Search products" aria-label="Search product revenue"><div id="troqRevenueResults"></div></div>';
+ page.querySelector('#troqRevenueListBack').onclick=()=>page.remove();page.querySelector('#troqRevenueSearch').oninput=e=>render(e.target.value.trim().toLocaleLowerCase());render('');
+}
+function troqOpenLegal(title){
+ const page=document.createElement('section');page.className='troqProductPage';page.innerHTML='<header class="troqProductPageHead"><button type="button" aria-label="Back">←</button><h2>'+troqEsc(title)+'</h2></header><div class="troqProductPageBody"><p>Official '+troqEsc(title)+' content has not been configured yet. Add your published policy text or URL before release.</p></div>';document.body.appendChild(page);page.querySelector('button').onclick=()=>page.remove();
+}
+function troqOpenDeleteSheet(){
+ const overlay=document.createElement('div');overlay.className='troqDeleteOverlay';overlay.innerHTML='<div class="troqDeleteSheet" role="dialog" aria-modal="true" aria-labelledby="troqDeleteTitle"><h2 id="troqDeleteTitle">Delete account?</h2><p>This permanently deletes your account and saved business and bill data. This cannot be undone.</p><p id="troqDeleteError" role="status"></p><div class="troqDeleteActions"><button type="button" id="troqDeleteNo">No</button><button type="button" id="troqDeleteYes">Yes, delete</button></div></div>';
+ document.body.appendChild(overlay);overlay.querySelector('#troqDeleteNo').onclick=()=>overlay.remove();overlay.onclick=e=>{if(e.target===overlay)overlay.remove();};
+ overlay.querySelector('#troqDeleteYes').onclick=async()=>{const btn=overlay.querySelector('#troqDeleteYes');btn.disabled=true;btn.innerHTML='<span class="troqSmallSpinner" aria-label="Deleting"></span>';try{const token=localStorage.getItem('troqUserToken');if(!token)throw Error('Login required');const {error}=await troqDb.rpc('troq_app_delete_account',{p_token:token});if(error)throw error;['troqLogin','troqMobile','troqUserId','troqUserToken'].forEach(k=>localStorage.removeItem(k));location.reload();}catch(e){overlay.querySelector('#troqDeleteError').textContent=e.message||'Delete failed';btn.disabled=false;btn.textContent='Yes, delete';}};
+}
 function troqOpenProductRevenue(key){
  const bills=Array.isArray(troqMyData.bills)?troqMyData.bills:[];
  const entries=bills.flatMap(b=>(b.items||[]).filter(i=>String(i.name||'').trim().toLocaleLowerCase()===key).map(i=>({bill:b,item:i})));
