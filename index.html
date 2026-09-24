@@ -1244,6 +1244,17 @@ svg.troqInlineIcon{display:inline-block!important;width:1em;height:1em;min-width
 button svg.troqInlineIcon{pointer-events:none}
 #troqBillManualSheet .troqManualClose svg{width:25px!important;height:25px!important;stroke:#161616!important;fill:none!important}
 </style>
+<style id="troqRepeatScanCartAndEditorFix">
+/* Cart lives below the video, rather than in the checkout footer. */
+#troqScanPage .troqScanMain{flex:1 1 auto!important;min-height:0!important;overflow:hidden!important}
+#troqScanPage .troqScanViewport{flex:0 1 36dvh!important;max-height:36dvh!important;min-height:120px!important}
+#troqScanPage #troqScanCart{flex:1 1 auto!important;min-height:0!important;max-height:32dvh!important;width:100%!important;overflow-y:auto!important;margin:6px 0!important;padding:0 12px 8px!important}
+#troqScanPage .troqScanCartLine{display:flex!important;align-items:center!important;gap:8px!important}
+#troqScanPage .troqScanCartLine button{display:grid!important;place-items:center!important;width:36px!important;height:36px!important;min-width:36px!important;line-height:1!important}
+#troqScanPage .troqScanCartLine strong{min-width:25px!important;text-align:center!important}
+html body > #troqBillEditor:not([hidden]){position:fixed!important;inset:0!important;z-index:2147483647!important;display:flex!important;visibility:visible!important;opacity:1!important;transform:none!important;background:#fff!important}
+html body > #troqBillEditor[hidden]{display:none!important}
+</style>
 </head>
 
 <body>
@@ -2911,8 +2922,10 @@ function troqScanPageUI(){
  document.body.appendChild(page);
  // Keep the bill mode button immediately under the manual barcode action.
  page.querySelector('#troqScanManual').after(page.querySelector('#troqScanBill'));
- page.querySelector('#troqScanBill').onclick=()=>{if(!troqInventory().length)return;troqScanBillMode=!troqScanBillMode;troqRenderScanCart();page.querySelector('#troqScanPageStatus').textContent='';if(!troqScanStream)troqStartBarcodeScan(true);};
- page.querySelector('#troqScanCheckout').onclick=()=>{if(!troqScanCart.length)return;troqCloseBillManualSheet();troqStopBarcodeScan();troqOpenBillEditor();const rows=[...troqField('troqBillLines').children];for(let i=0;i<troqScanCart.length;i++){const item=troqScanCart[i];if(i>0)troqBillAddProduct();const row=troqField('troqBillLines').children[i];if(!row)continue;const name=row.querySelector('[data-product]');const qty=row.querySelector('[data-qty]'),price=row.querySelector('[data-price]');if(name)name.value=item.name;if(qty)qty.value=item.qty;if(price)price.value=item.price;}troqBillRecalculate();};
+ // Keep cart and its minus/plus controls directly below the camera.
+ page.querySelector('.troqScanViewport').after(page.querySelector('#troqScanCart'));
+ page.querySelector('#troqScanBill').onclick=()=>{if(!troqInventory().length)return;troqScanBillMode=!troqScanBillMode;troqScanLastCode='';troqScanLastAt=0;troqRenderScanCart();page.querySelector('#troqScanPageStatus').textContent='';if(!troqScanStream)troqStartBarcodeScan(true);};
+ page.querySelector('#troqScanCheckout').onclick=()=>{if(!troqScanCart.length)return;troqCloseBillManualSheet();troqStopBarcodeScan();page.classList.remove('open');const editor=troqField('troqBillEditor');if(editor.parentElement!==document.body)document.body.appendChild(editor);troqOpenBillEditor();editor.style.setProperty('z-index','2147483647','important');const rows=[...troqField('troqBillLines').children];for(let i=0;i<troqScanCart.length;i++){const item=troqScanCart[i];if(i>0)troqBillAddProduct();const row=troqField('troqBillLines').children[i];if(!row)continue;const name=row.querySelector('[data-product]');const qty=row.querySelector('[data-qty]'),price=row.querySelector('[data-price]');if(name)name.value=item.name;if(qty)qty.value=item.qty;if(price)price.value=item.price;}troqBillRecalculate();};
  page.querySelector('#troqScanRetry').onclick=()=>troqStartBarcodeScan(true);
  page.querySelector('#troqScanManual').onclick=()=>{if(troqScanBillMode)troqOpenBillManualSheet();else troqOpenManualBarcode();};
  return page;
@@ -2941,13 +2954,13 @@ function troqScanToast(message){
  let toast=document.getElementById('troqScanToast');if(!toast){toast=document.createElement('div');toast.id='troqScanToast';toast.setAttribute('role','status');document.body.appendChild(toast);}
  toast.textContent=message;toast.classList.add('show');clearTimeout(troqScanToast.timer);troqScanToast.timer=setTimeout(()=>toast.classList.remove('show'),1900);
 }
-function troqOpenScanPage(){const page=troqScanPageUI();page.classList.add('open');troqScanBillMode=false;troqScanCart=[];troqRenderScanCart();page.querySelector('#troqScanPageStatus').textContent='';troqStartBarcodeScan(true);}
+function troqOpenScanPage(){const page=troqScanPageUI();page.classList.add('open');troqScanBillMode=false;troqScanCart=[];troqScanLastCode='';troqScanLastAt=0;troqRenderScanCart();page.querySelector('#troqScanPageStatus').textContent='';troqStartBarcodeScan(true);}
 function troqCloseScanPage(){troqCloseBillManualSheet();troqStopBarcodeScan();document.getElementById('troqScanPage')?.classList.remove('open');troqCloseProductForm();}
 function troqHandleScannedCode(barcode){
  if(!barcode||troqScanBusy)return;
  const now=Date.now(),same=barcode===troqScanLastCode;
  // A held barcode is seen many times per second; accept one scan per 1.2s.
- if(same&&now-troqScanLastAt<1200)return;
+ if(same&&now-troqScanLastAt<1350)return;
  troqScanLastCode=barcode;troqScanLastAt=now;
  const product=troqInventory().find(p=>String(p.barcode||'')===String(barcode));
  if(troqScanBillMode){
@@ -2999,7 +3012,7 @@ async function troqStartBarcodeScan(fromScanPage=false){
    }catch(error){status.textContent='Automatic scanner unavailable. Check internet connection or enter barcode manually.';}
   }
   if(!troqBarcodeDetector){status.textContent='Barcode scanner library unavailable. Check internet connection or enter barcode manually.';return;}
-  const tick=async()=>{if(!troqScanStream||!page.classList.contains('open'))return;try{const found=await troqBarcodeDetector.detect(video);if(found.length){troqHandleScannedCode(found[0].rawValue);return;}}catch(e){}troqScanTimer=setTimeout(tick,220);};tick();
+  const tick=async()=>{if(!troqScanStream||!page.classList.contains('open'))return;try{const found=await troqBarcodeDetector.detect(video);if(found.length)troqHandleScannedCode(found[0].rawValue);}catch(e){}if(troqScanStream&&page.classList.contains('open'))troqScanTimer=setTimeout(tick,220);};tick();
  }catch(e){troqStopBarcodeScan();retry.hidden=false;const name=e?.name||'';status.textContent=name==='NotAllowedError'||name==='PermissionDeniedError'?'Camera permission denied. Allow camera access in browser site settings and tap Retry camera.':name==='NotFoundError'?'No camera found on this device.':name==='NotReadableError'?'Camera is busy. Close other camera apps and retry.':'Camera unavailable: '+(e.message||'Check camera permission');}
  finally{troqScanStarting=false;}
 }
