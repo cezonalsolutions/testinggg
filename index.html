@@ -1308,6 +1308,7 @@ const TROQ_SUPABASE_URL = "https://wxnmflkgxjnjinyawghf.supabase.co";
 const TROQ_SUPABASE_KEY = "sb_publishable_bXrJEV0B56dRpAX-cEyNVg_QxR2adg4";
 const troqDb = window.supabase.createClient(TROQ_SUPABASE_URL, TROQ_SUPABASE_KEY);
 let troqLoginBusy = false;
+let troqIsNewUser = false;
 const troqBtnLabel = document.querySelector("#proceedButton .troqBtnLabel");
 function troqButtonText(value){troqBtnLabel.textContent=value;}
 function troqButtonLoading(loading){
@@ -1515,22 +1516,39 @@ passwordInput.addEventListener(
 button.addEventListener("click", async()=>{
     if(button.disabled || troqLoginBusy) return;
     if(step === "mobile"){
-        step = "password";
-        mobileNumberText.textContent = "+91 " + mobileInput.value;
-        mobileDisplay.classList.add("show");
-        loginTitle.textContent = "Enter or create your password";
-        mobileBox.style.display = "none";
-        passwordBox.classList.add("show");
-        passwordInput.placeholder = "Password (minimum 8 characters)";
-        troqButtonText("Continue");
-        updateButton();
-        openSheet();
-        passwordInput.focus();
+        troqLoginBusy = true;
+        troqButtonLoading(true);
+        hideError();
+        try{
+            const {data:exists,error} = await troqDb.rpc("troq_app_mobile_exists",{
+                p_mobile:mobileInput.value.trim()
+            });
+            if(error) throw error;
+            troqIsNewUser = !exists;
+            step = "password";
+            mobileNumberText.textContent = "+91 " + mobileInput.value;
+            mobileDisplay.classList.add("show");
+            loginTitle.textContent = troqIsNewUser ? "Create your password" : "Enter your password";
+            mobileBox.style.display = "none";
+            passwordBox.classList.add("show");
+            passwordInput.value = "";
+            passwordInput.placeholder = troqIsNewUser ? "Create password (min. 8 characters)" : "Enter your password";
+            passwordInput.autocomplete = troqIsNewUser ? "new-password" : "current-password";
+            troqButtonText(troqIsNewUser ? "Create Account" : "Login");
+            updateButton();
+            openSheet();
+            passwordInput.focus();
+        }catch(err){showError(err.message || "Could not check mobile number");}
+        finally{
+            troqLoginBusy = false;
+            troqButtonLoading(false);
+            updateButton();
+        }
         return;
     }
     const enteredMobile = mobileInput.value.trim();
     const enteredPassword = passwordInput.value;
-    if(enteredPassword.length < 8){showError("Use at least 8 characters for your password");return;}
+    if(enteredPassword.length < 8){showError("Password must have at least 8 characters");return;}
     troqLoginBusy = true;
     button.disabled = true;
     troqButtonLoading(true);
@@ -1552,7 +1570,7 @@ button.addEventListener("click", async()=>{
     finally{
         troqLoginBusy = false;
         troqButtonLoading(false);
-        troqButtonText("Continue");
+        troqButtonText(troqIsNewUser ? "Create Account" : "Login");
         updateButton();
     }
 });
