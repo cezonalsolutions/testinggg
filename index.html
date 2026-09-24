@@ -1084,6 +1084,11 @@ body{
 .troqBillGSTSetting label{display:flex;flex-direction:column;gap:4px;font:14px 'Outfit',sans-serif}
 .troqBillGSTSetting small{font-size:12px;color:#888}
 .troqBillGSTSetting input{width:95px;padding:10px;border:1px solid #ddd;border-radius:10px;font:15px 'Outfit',sans-serif}
+
+/* ONE LIVE RECEIPT / BILL INSIGHTS */
+.troqLiveReceipt{max-width:330px;margin:18px auto;padding:20px 15px;background:white;border:1px dashed #c9c9c9;box-shadow:0 8px 28px #0000000a;font:13px 'Outfit',sans-serif;overflow-wrap:anywhere}
+.troqLiveSection{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px dashed #eee;cursor:grab}
+.troqDragControls{display:flex;align-items:center;gap:3px;color:#999;flex:none}.troqDragControls button{width:25px;height:27px;border:0;border-radius:6px;background:#f5f5f5;color:#555}.troqLiveSectionContent{flex:1;min-width:0;text-align:center;white-space:normal;overflow-wrap:anywhere}.troqLiveSectionContent.name{font-weight:800;font-size:20px;line-height:1.2}.troqLiveLogo{max-width:85px;max-height:75px;object-fit:contain}.troqNoLogo{color:#aaa;font-size:11px}.troqLiveRule{border-top:1px dashed #888;margin:12px 0}.troqLiveItem{display:flex;justify-content:space-between;gap:8px;padding:5px 0}.troqLiveTotal{font-size:16px}.troqSavedGreen{color:#128547!important;font-weight:700}.troqInsightGrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:20px 0}.troqInsightGrid>div{border:1px solid #eee;border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:8px}.troqInsightGrid small{color:#777}.troqInsightGrid strong{font-size:21px}.troqInsightTitle{margin:25px 0 12px}.troqHistoryRow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 0;border-bottom:1px solid #eee}.troqHistoryRow>div{display:flex;flex-direction:column;gap:4px}.troqHistoryRow small{color:#777}.troqHistoryRow button{border:0;border-radius:10px;background:#fff0f6;color:#ff2380;padding:11px 14px;font-weight:600}
 </style>
 </head>
 
@@ -1822,38 +1827,56 @@ function troqShowDashboard(tab='home'){
     const flags={logo:true,name:true,subtext:true,mobile:true,address:true,gst:true};
     const visible={...flags,...(settings.fields||{})};
     const labels={logo:'Business logo',name:'Business name',subtext:'Business sub text',mobile:'Business mobile',address:'Business address',gst:'GSTIN'};
-    content.innerHTML='<h1>Create a bill</h1><button type="button" id="troqCreateBill" class="troqHomeCreate"><i class="fa-solid fa-receipt" aria-hidden="true"></i> Create a bill</button>'+
+    content.innerHTML='<button type="button" id="troqCreateBill" class="troqHomeCreate"><i class="fa-solid fa-receipt" aria-hidden="true"></i> Create a bill</button>'+
       '<section class="troqBillSettings"><div class="troqBillSettingsHead"><div><h2>Bill settings</h2><p>Choose what appears on your bill</p></div><label class="troqBillSwitch"><input type="checkbox" id="troqBillSettingsToggle" aria-label="Enable bill settings" '+(enabled?'checked':'')+'><span></span></label></div>'+
       '<div id="troqBillSettingsBody" '+(enabled?'':'hidden')+'>'+Object.entries(labels).map(([key,label])=>'<div class="troqBillSettingRow"><div><strong>'+label+'</strong><small>'+(key==='logo'?'Show your uploaded business logo':'Show on printed bill')+'</small></div><label class="troqBillSwitch"><input type="checkbox" data-bill-field="'+key+'" '+(visible[key]?'checked':'')+' aria-label="Show '+label+'"><span></span></label></div>').join('')+
       '<div class="troqBillGSTSetting"><label for="troqBillGSTRate"><strong>GST rate (%)</strong><small>0 for no GST. Applied to bill subtotal.</small></label><input id="troqBillGSTRate" type="number" min="0" max="100" step="0.01" value="'+troqEsc(String(settings.gst_rate??0))+'"></div>'+
-      '<div class="troqBillTemplateWrap"><h3>Bill template</h3><p>Choose your receipt design</p><div class="troqBillTemplateChoices">'+
-      [1,2,3,4,5].map(n=>'<label class="troqBillTemplateChoice"><input type="radio" name="troqHomeTemplate" value="'+n+'" '+(selected===String(n)?'checked':'')+'><div class="troqTemplateDemo troqTemplateDemo'+n+'"><div class="troqDemoShop">'+troqEsc(b.name||'YOUR SHOP')+'</div><div class="troqDemoSub">'+troqEsc(b.subtext||'Business details')+'</div><div class="troqDemoRule"></div><div class="troqDemoRow"><span>Item</span><span>₹</span></div><div class="troqDemoRow"><span>Sample product</span><span>50</span></div><div class="troqDemoRule"></div><div class="troqDemoRow"><b>TOTAL</b><b>₹50</b></div></div><span class="troqDemoSelect">Design '+n+'</span></label>').join('')+
+      '<div class="troqBillTemplateWrap"><h3>Bill template</h3><p>Drag sections to change their print order. Use arrows on mobile.</p><div id="troqLiveReceipt" class="troqLiveReceipt"></div></div>'+ 
       '</div></div></div></section><p id="troqBillSettingStatus" class="troqBillSettingStatus" role="status"></p>';
     troqField('troqCreateBill').onclick=troqOpenBillEditor;
     const toggle=troqField('troqBillSettingsToggle');
     const settingsBody=troqField('troqBillSettingsBody');
     const status=troqField('troqBillSettingStatus');
-    let saving=false;
+    let saving=false, pending=false;
+    const orderKeys=['logo','name','subtext','mobile','address','gst'];
+    let order=[...(settings.order||orderKeys)].filter(x=>orderKeys.includes(x));
+    orderKeys.forEach(x=>{if(!order.includes(x))order.push(x)});
     function refreshBillDemos(){
-      const on=toggle.checked;
-      content.querySelectorAll('[data-demo-field]').forEach(el=>{const field=el.dataset.demoField;const input=content.querySelector('[data-bill-field="'+field+'"]');el.hidden=on&&input&&!input.checked;});
+      const on=toggle.checked, receipt=troqField('troqLiveReceipt');
+      const fields={...visible};content.querySelectorAll('[data-bill-field]').forEach(x=>fields[x.dataset.billField]=x.checked);
+      const samples={logo:(b.logo_url||b.logo)?'<img class="troqLiveLogo" src="'+troqEsc(b.logo_url||b.logo)+'" alt="Logo">':'<span class="troqNoLogo">No logo uploaded</span>',name:troqEsc(b.name||'YOUR SHOP'),subtext:troqEsc(b.subtext||'Business sub text'),mobile:troqEsc(b.mobile||'Mobile number'),address:troqEsc(b.address||'Business address'),gst:'GSTIN: '+troqEsc(b.gst||'Not provided')};
+      receipt.innerHTML=order.filter(k=>!on||fields[k]).map((k,i)=>'<div class="troqLiveSection" draggable="true" data-section="'+k+'"><div class="troqDragControls"><span class="troqDragGrip" title="Drag to reorder">☰</span><button type="button" data-move="-1" data-index="'+i+'" aria-label="Move up">↑</button><button type="button" data-move="1" data-index="'+i+'" aria-label="Move down">↓</button></div><div class="troqLiveSectionContent '+k+'">'+samples[k]+'</div></div>').join('')+'<div class="troqLiveRule"></div><div class="troqLiveItem">Sample product <span>₹50.00</span></div><div class="troqLiveRule"></div><div class="troqLiveItem"><b>Subtotal</b><b>₹50.00</b></div>';
       const rate=on?Math.min(100,Math.max(0,Number(troqField('troqBillGSTRate').value)||0)):0;
-      content.querySelectorAll('[data-demo-gst]').forEach(el=>{el.hidden=!rate;el.innerHTML='<span>GST ('+rate+'%)</span><span>₹'+(50*rate/100).toFixed(2)+'</span>';});
-      content.querySelectorAll('[data-demo-total]').forEach(el=>el.textContent='₹'+(50*(1+rate/100)).toFixed(2));
+      if(rate)receipt.insertAdjacentHTML('beforeend','<div class="troqLiveItem">GST ('+rate+'%) <span>₹'+(50*rate/100).toFixed(2)+'</span></div>');
+      receipt.insertAdjacentHTML('beforeend','<div class="troqLiveItem troqLiveTotal"><b>TOTAL</b><b>₹'+(50*(1+rate/100)).toFixed(2)+'</b></div>');
+      receipt.querySelectorAll('[data-move]').forEach(btn=>btn.onclick=()=>{const i=Number(btn.dataset.index),j=i+Number(btn.dataset.move);if(j<0||j>=order.length)return;[order[i],order[j]]=[order[j],order[i]];refreshBillDemos();saveBillSettings();});
+      let dragged='';receipt.querySelectorAll('[data-section]').forEach(el=>{el.ondragstart=e=>{dragged=el.dataset.section;e.dataTransfer.setData('text/plain',dragged)};el.ondragover=e=>e.preventDefault();el.ondrop=e=>{e.preventDefault();const from=order.indexOf(dragged),to=order.indexOf(el.dataset.section);if(from<0||to<0)return;order.splice(to,0,order.splice(from,1)[0]);refreshBillDemos();saveBillSettings()}});
     }
     refreshBillDemos();
     async function saveBillSettings(){
-      if(saving)return;
-      const next={enabled:toggle.checked,template:content.querySelector('input[name="troqHomeTemplate"]:checked')?.value||'1',gst_rate:Math.min(100,Math.max(0,Number(troqField('troqBillGSTRate').value)||0)),fields:{}};
+      if(saving){pending=true;return;}
+      const next={enabled:toggle.checked,template:'1',order:[...order],gst_rate:Math.min(100,Math.max(0,Number(troqField('troqBillGSTRate').value)||0)),fields:{}};
       content.querySelectorAll('[data-bill-field]').forEach(x=>next.fields[x.dataset.billField]=x.checked);
-      refreshBillDemos();saving=true;status.textContent='Saving…';
-      try{await troqSaveMyData({...troqMyData,bill_settings:next});status.textContent='Settings saved';}
+      refreshBillDemos();saving=true;status.textContent='Saving…';status.classList.remove('troqSavedGreen');
+      try{await troqSaveMyData({...troqMyData,bill_settings:next});status.textContent='✓ Saved';status.classList.add('troqSavedGreen');}
       catch(err){status.textContent='Could not save: '+(err.message||'Please try again');}
-      finally{saving=false;}
+      finally{saving=false;if(pending){pending=false;saveBillSettings();}}
     }
     toggle.onchange=()=>{settingsBody.hidden=!toggle.checked;refreshBillDemos();saveBillSettings();};
-    content.querySelectorAll('[data-bill-field],input[name="troqHomeTemplate"],#troqBillGSTRate').forEach(x=>x.onchange=saveBillSettings);
+    content.querySelectorAll('[data-bill-field],#troqBillGSTRate').forEach(x=>x.onchange=saveBillSettings);
     content.querySelectorAll('[data-bill-field]').forEach(x=>x.addEventListener('input',refreshBillDemos));
+  }else if(tab==='insights'){
+    const bills=Array.isArray(troqMyData.bills)?troqMyData.bills:[];
+    const revenue=bills.reduce((n,x)=>n+(Number(x.total_amount)||0),0);
+    content.innerHTML='<h1>Insights</h1><div class="troqInsightGrid"><div><small>Total bills</small><strong>'+bills.length+'</strong></div><div><small>Revenue</small><strong>'+troqBillMoney(revenue)+'</strong></div></div><h2 class="troqInsightTitle">Bill history</h2><div id="troqBillHistory">'+(bills.length?[...bills].reverse().map(x=>'<div class="troqHistoryRow"><div><strong>'+troqBillMoney(x.total_amount)+'</strong><small>'+troqEsc(new Date(x.created_at).toLocaleString('en-IN'))+' · '+x.items.length+' items</small></div><button type="button" data-reprint="'+troqEsc(x.id)+'">Reprint</button></div>').join(''):'<p>No bills yet.</p>')+'</div><p id="troqReprintStatus" role="status"></p>';
+    content.querySelectorAll('[data-reprint]').forEach(btn=>btn.onclick=async()=>{
+      const bill=bills.find(x=>x.id===btn.dataset.reprint);if(!bill)return;
+      const win=window.open('','_blank','width=420,height=700');
+      if(!win){troqField('troqReprintStatus').textContent='Allow popups to reprint.';return;}
+      win.document.write(troqBillReceiptHtml(bill));win.document.close();
+      try{const reprints=Array.isArray(troqMyData.reprints)?troqMyData.reprints:[];await troqSaveMyData({...troqMyData,reprints:[...reprints,{bill_id:bill.id,printed_at:new Date().toISOString()}]});troqField('troqReprintStatus').textContent='Reprint recorded';troqPrintWindow(win);}
+      catch(e){win.close();troqField('troqReprintStatus').textContent='Reprint not recorded: '+e.message;}
+    });
   }else if(tab==='profile'){
     const logo=b.logo_url||b.logo||'';
     const avatar=logo?'<img class="troqProfileLogo" src="'+troqEsc(logo)+'" alt="Business logo">':'<div class="troqProfileFallback">'+troqEsc((b.name||'T').charAt(0).toUpperCase())+'</div>';
@@ -1862,6 +1885,7 @@ function troqShowDashboard(tab='home'){
     content.innerHTML='<div class="troqProfileTop"><div class="troqProfileIdentity">'+avatar+'<div class="troqProfileIdentityText"><h2 style="font-family:&quot;'+troqEsc(b.font||'Outfit')+'&quot;,sans-serif">'+troqEsc(b.name||'My Business')+'</h2><p>'+troqEsc(b.subtext||'')+'</p><p>'+troqEsc(b.type||'')+'</p></div></div>'+
       '<div class="troqProfileStats"><div class="troqProfileStat"><strong>'+stats.count+'</strong><span>Bills</span></div><div class="troqProfileStat"><strong>'+troqEsc(formattedRevenue)+'</strong><span>Revenue</span></div></div>'+
       '<button type="button" class="troqProfileEdit" id="troqEditBusiness"><i class="fa-solid fa-pen-to-square"></i> Edit Profile</button></div>'+
+      '<div class="troqProfileSection"><strong>Reprinted bills</strong><p>'+((troqMyData.reprints||[]).length)+' reprints · not included in bill count or revenue</p></div>'+
       '<h3 class="troqProfileDetailsTitle">Business details</h3><div class="troqProfileSection">'+troqProfileRow('Login mobile',sessionStorage.getItem('troqMobile'))+troqProfileRow('Business mobile',b.mobile)+troqProfileRow('Business type',b.type)+troqProfileRow('Address',b.address)+troqProfileRow('GSTIN',b.gst)+troqProfileRow('Monthly sales',b.average_sales)+troqProfileRow('Brand font',b.font)+'</div><div class="troqProfileLogoutWrap"><button type="button" class="troqProfileLogout" id="troqLogout"><i class="fa-solid fa-arrow-right-from-bracket" aria-hidden="true"></i> Log out</button></div>';
   }else{
     content.innerHTML='<h1>'+title+'</h1><p>'+title+' screen is ready for your next features.</p>';
@@ -1884,7 +1908,8 @@ function troqShowDashboard(tab='home'){
 /* CREATE BILL: token-scoped database save, then system print dialog */
 function troqBillMoney(v){return new Intl.NumberFormat('en-IN',{style:'currency',currency:'INR'}).format(v);}
 function troqBillRecalculate(){let total=0;document.querySelectorAll('#troqBillLines .troqBillLine').forEach(row=>{const q=Number(row.querySelector('[data-qty]').value)||0,p=Number(row.querySelector('[data-price]').value)||0;total+=Math.max(0,q)*Math.max(0,p);});troqField('troqBillEditorTotal').textContent=troqBillMoney(total);}
-function troqBillAddProduct(){const row=document.createElement('div');row.className='troqBillLine';row.innerHTML='<label class="troqProductFull">Product name<input aria-label="Product name" placeholder="Enter product name" maxlength="180" data-product></label><div class="troqProductNumbers"><label>Quantity<input aria-label="Quantity" type="number" min="1" step="1" value="1" data-qty></label><label>Price (₹)<input aria-label="Price" type="number" min="0" step="0.01" placeholder="0.00" data-price></label><button type="button" aria-label="Remove product"><i class="fa-solid fa-trash"></i></button></div>';row.querySelector('button').onclick=()=>{row.remove();troqBillRecalculate();};row.querySelectorAll('input').forEach(x=>x.oninput=troqBillRecalculate);troqField('troqBillLines').appendChild(row);troqBillRecalculate();}
+function troqProductNames(){return [...new Set((troqMyData.bills||[]).flatMap(b=>(b.items||[]).map(i=>i.name)).filter(Boolean))].sort((a,b)=>a.localeCompare(b));}
+function troqBillAddProduct(){const row=document.createElement('div');row.className='troqBillLine';row.innerHTML='<label class="troqProductFull">Product name<input aria-label="Product name" placeholder="Enter product name" maxlength="180" data-product></label><div class="troqProductNumbers"><label>Quantity<input aria-label="Quantity" type="number" min="1" step="1" value="1" data-qty></label><label>Price (₹)<input aria-label="Price" type="number" min="0" step="0.01" placeholder="0.00" data-price></label><button type="button" aria-label="Remove product"><i class="fa-solid fa-trash"></i></button></div>';const input=row.querySelector('[data-product]');const list=document.createElement('datalist');list.id='troqSuggestions'+crypto.randomUUID().replaceAll('-','');list.innerHTML=troqProductNames().map(n=>'<option value="'+troqEsc(n)+'"></option>').join('');input.setAttribute('list',list.id);row.appendChild(list);row.querySelector('button').onclick=()=>{row.remove();troqBillRecalculate();};row.querySelectorAll('input').forEach(x=>x.oninput=troqBillRecalculate);troqField('troqBillLines').appendChild(row);troqBillRecalculate();}
 function troqOpenBillEditor(){troqField('troqBillEditor').hidden=false;troqField('troqBillLines').innerHTML='';troqField('troqBillPrintError').textContent='';troqBillAddProduct();}
 troqField('troqBillClose').onclick=()=>troqField('troqBillEditor').hidden=true;
 troqField('troqBillAddLine').onclick=troqBillAddProduct;
@@ -1892,13 +1917,20 @@ function troqBillReceiptHtml(bill){
  const b=bill.business||{}, settings=bill.settings||{}, enabled=settings.enabled===true;
  const flags=enabled?{logo:true,name:true,subtext:true,mobile:true,address:true,gst:true,...(settings.fields||{})}:{logo:true,name:true,subtext:true,mobile:true,address:true,gst:true};
  const show=(key,value)=>flags[key]&&value;
- const template=enabled?String(settings.template||'1'):'1';
+ const template='1';
  const esc=troqEsc;
  const rate=enabled?Math.min(100,Math.max(0,Number(settings.gst_rate)||0)):0;
  const subtotal=Number(bill.subtotal??bill.items.reduce((a,i)=>a+i.amount,0));
  const gstAmount=enabled?Number(bill.gst_amount??Math.round(subtotal*rate)/100):0;
+ const headerOrder=Array.isArray(settings.order)?settings.order:['logo','name','subtext','mobile','address','gst'];
+ const headerParts={logo:show('logo',b.logo_url||b.logo)?'<img class="logo" src="'+esc(b.logo_url||b.logo)+'">':'',name:show('name',b.name)?'<div class="shop">'+esc(b.name)+'</div>':'',subtext:show('subtext',b.subtext)?'<div class="sub">'+esc(b.subtext)+'</div>':'',mobile:show('mobile',b.mobile)?'<div class="meta">'+esc(b.mobile)+'</div>':'',address:show('address',b.address)?'<div class="meta">'+esc(b.address)+'</div>':'',gst:show('gst',b.gst)?'<div class="meta">GSTIN: '+esc(b.gst)+'</div>':''};
+ const headerHtml=[...new Set(headerOrder)].map(k=>headerParts[k]||'').join('');
  const lines=bill.items.map(item=>'<div class="item"><div class="itemName">'+esc(item.name)+'</div><div class="itemNumbers"><span>'+item.qty+' × '+troqBillMoney(item.price)+'</span><strong>'+troqBillMoney(item.amount)+'</strong></div></div>').join('');
- return '<!doctype html><html><head><meta charset="utf-8"><title>Bill '+esc(bill.id)+'</title><style>@page{size:80mm auto;margin:3mm}*{box-sizing:border-box}body{font:12px/1.45 Arial,sans-serif;color:#111;margin:0;padding:2mm;overflow-wrap:anywhere}.receipt{width:100%;max-width:74mm;margin:auto}.logo{display:block;max-width:27mm;max-height:25mm;object-fit:contain;margin:0 auto 6px}.shop{text-align:center;font-size:21px;font-weight:900;white-space:normal;overflow-wrap:anywhere;line-height:1.2;margin:5px 0}.sub,.meta{text-align:center;overflow-wrap:anywhere;margin:4px 0}.rule{border-top:1px dashed #111;margin:9px 0}.item{padding:7px 0;border-bottom:1px dashed #aaa}.itemName{font-size:12px;font-weight:600;overflow-wrap:anywhere}.itemNumbers{display:flex;justify-content:space-between;gap:8px;margin-top:4px}.total{display:flex;justify-content:space-between;font-size:16px;font-weight:800;margin-top:12px}.footer{text-align:center;margin-top:16px;font-size:10px}.t2 .shop{font-size:25px;border-bottom:2px solid #111;padding-bottom:5px}.t2 .total{border-top:2px solid #111;border-bottom:2px solid #111;padding:6px 0}.t3{border:2px solid #111;padding:7px}.t3 .item{border-bottom:1px solid #111}.t4 .rule{border-top:3px double #111}.t4 .shop{letter-spacing:1px}.t5 .rule,.t5 .item{border:0}.t5 .total{border-top:1px solid #111;padding-top:8px}@media print{body{margin:0}}</style></head><body><div class="receipt t'+esc(template)+'">'+(show('logo',b.logo_url||b.logo)?'<img class="logo" src="'+esc(b.logo_url||b.logo)+'">':'')+(show('name',b.name)?'<div class="shop">'+esc(b.name)+'</div>':'')+(show('subtext',b.subtext)?'<div class="sub">'+esc(b.subtext)+'</div>':'')+(show('mobile',b.mobile)?'<div class="meta">'+esc(b.mobile)+'</div>':'')+(show('address',b.address)?'<div class="meta">'+esc(b.address)+'</div>':'')+(show('gst',b.gst)?'<div class="meta">GSTIN: '+esc(b.gst)+'</div>':'')+'<div class="rule"></div><div class="meta">'+esc(new Date(bill.created_at).toLocaleString('en-IN'))+'</div><div class="rule"></div>'+lines+'<div class="rule"></div><div class="itemNumbers"><span>Subtotal</span><span>'+troqBillMoney(subtotal)+'</span></div>'+(rate?'<div class="itemNumbers"><span>GST ('+rate+'%)</span><span>'+troqBillMoney(gstAmount)+'</span></div>':'')+'<div class="total"><span>TOTAL</span><span>'+troqBillMoney(bill.total_amount)+'</span></div><div class="footer">Thank you!</div></div></body></html>';
+ return '<!doctype html><html><head><meta charset="utf-8"><title>Bill '+esc(bill.id)+'</title><style>@page{size:80mm auto;margin:3mm}*{box-sizing:border-box}body{font:12px/1.45 Arial,sans-serif;color:#111;margin:0;padding:2mm;overflow-wrap:anywhere}.receipt{width:100%;max-width:74mm;margin:auto}.logo{display:block;max-width:27mm;max-height:25mm;object-fit:contain;margin:0 auto 6px}.shop{text-align:center;font-size:21px;font-weight:900;white-space:normal;overflow-wrap:anywhere;line-height:1.2;margin:5px 0}.sub,.meta{text-align:center;overflow-wrap:anywhere;margin:4px 0}.rule{border-top:1px dashed #111;margin:9px 0}.item{padding:7px 0;border-bottom:1px dashed #aaa}.itemName{font-size:12px;font-weight:600;overflow-wrap:anywhere}.itemNumbers{display:flex;justify-content:space-between;gap:8px;margin-top:4px}.total{display:flex;justify-content:space-between;font-size:16px;font-weight:800;margin-top:12px}.footer{text-align:center;margin-top:16px;font-size:10px}.t2 .shop{font-size:25px;border-bottom:2px solid #111;padding-bottom:5px}.t2 .total{border-top:2px solid #111;border-bottom:2px solid #111;padding:6px 0}.t3{border:2px solid #111;padding:7px}.t3 .item{border-bottom:1px solid #111}.t4 .rule{border-top:3px double #111}.t4 .shop{letter-spacing:1px}.t5 .rule,.t5 .item{border:0}.t5 .total{border-top:1px solid #111;padding-top:8px}@media print{body{margin:0}}</style></head><body><div class="receipt t'+esc(template)+'">'+headerHtml+'<div class="rule"></div><div class="meta">'+esc(new Date(bill.created_at).toLocaleString('en-IN'))+'</div><div class="rule"></div>'+lines+'<div class="rule"></div><div class="itemNumbers"><span>Subtotal</span><span>'+troqBillMoney(subtotal)+'</span></div>'+(rate?'<div class="itemNumbers"><span>GST ('+rate+'%)</span><span>'+troqBillMoney(gstAmount)+'</span></div>':'')+'<div class="total"><span>TOTAL</span><span>'+troqBillMoney(bill.total_amount)+'</span></div><div class="footer">Thank you!</div></div></body></html>';
+}
+async function troqPrintWindow(win){
+  try{await Promise.all([...win.document.images].map(img=>img.complete?Promise.resolve():new Promise(resolve=>{img.onload=resolve;img.onerror=resolve;setTimeout(resolve,4000)})));if(win.document.fonts?.ready)await win.document.fonts.ready;win.focus();win.print();}
+  catch(e){console.error('Print error',e);}
 }
 let troqBillPrinting=false;
 troqField('troqBillPreview').onclick=async()=>{
@@ -1913,29 +1945,20 @@ troqField('troqBillPreview').onclick=async()=>{
  const gstAmount=Math.round(subtotal*gstRate)/100;
  const total=Math.round((subtotal+gstAmount)*100)/100;
  const bill={subtotal,gst_rate:gstRate,gst_amount:gstAmount,id:crypto.randomUUID(),created_at:new Date().toISOString(),items,total_amount:total,business:{...(troqMyData.business||{})},settings:JSON.parse(JSON.stringify(troqMyData.bill_settings||{}))};
+ const printWindow=window.open('','_blank','width=420,height=700');
+ if(!printWindow){err.textContent='Please allow popups to print bills.';return;}
+ printWindow.document.write('<p style="font-family:sans-serif">Saving bill…</p>');printWindow.document.close();
  troqBillPrinting=true;btn.disabled=true;btn.textContent='Saving…';
  try{
    const bills=Array.isArray(troqMyData.bills)?troqMyData.bills:[];
    await troqSaveMyData({...troqMyData,bills:[...bills,bill]});
    const html=troqBillReceiptHtml(bill);
-   const frame=document.createElement('iframe');
-   frame.setAttribute('title','Bill print');
-   frame.style.cssText='position:fixed;right:0;bottom:0;width:1px;height:1px;border:0;opacity:0;pointer-events:none;';
-   document.body.appendChild(frame);
-   frame.onload=async()=>{
-     try{
-       const doc=frame.contentDocument;
-       await Promise.all([...doc.images].map(img=>img.complete?Promise.resolve():new Promise(resolve=>{img.onload=resolve;img.onerror=resolve;setTimeout(resolve,4000)})));
-       if(doc.fonts?.ready)await doc.fonts.ready;
-       frame.contentWindow.focus();
-       frame.contentWindow.print();
-     }catch(e){alert('Bill saved, but print could not open: '+e.message);}
-   };
-   frame.srcdoc=html;
+   printWindow.document.open();printWindow.document.write(html);printWindow.document.close();
+   troqPrintWindow(printWindow);
    troqField('troqBillEditor').hidden=true;
    troqShowDashboard('home');
-   setTimeout(()=>frame.remove(),120000);
- }catch(e){err.textContent='Bill not saved. '+(e.message||'Please retry');}
+
+ }catch(e){printWindow.close();err.textContent='Bill not saved. '+(e.message||'Please retry');}
  finally{troqBillPrinting=false;btn.disabled=false;btn.textContent='Print';}
 };
 document.querySelectorAll('.troqBottomNav button').forEach(b=>b.addEventListener('click',()=>troqShowDashboard(b.dataset.tab)));
