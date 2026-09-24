@@ -1176,6 +1176,16 @@ html:has(#mainUI2.active),body:has(#mainUI2.active){overflow-y:auto!important;ov
 </style><style id="troqInventoryStyles">
 .troqScannerOverlay{position:fixed;inset:0;z-index:1700;display:none}.troqScannerOverlay.open{display:block}.troqScannerBackdrop{position:absolute;inset:0;background:#0008}.troqScannerPanel{position:absolute;bottom:0;left:0;right:0;background:#fff;border-radius:25px 25px 0 0;padding:12px 22px calc(25px + env(safe-area-inset-bottom));max-height:85dvh;overflow:auto}.troqScannerHandle{width:42px;height:5px;border-radius:9px;background:#ddd;margin:0 auto 22px}.troqScannerChoice{display:flex;width:100%;align-items:center;gap:16px;padding:19px 8px;border:0;border-bottom:1px solid #eee;background:#fff;font:700 17px Outfit,sans-serif;text-align:left;color:#171717}.troqScannerChoice i{width:40px;height:40px;display:grid;place-items:center;background:#fff0f7;border-radius:12px;color:#ff2380}.troqScannerClose{border:0;background:#f5f5f5;padding:12px;border-radius:12px;margin-top:17px;width:100%;font:600 15px Outfit,sans-serif}.troqInventoryPage{position:fixed;inset:0;z-index:1750;background:#fff;display:none;flex-direction:column;height:100dvh}.troqInventoryPage.open{display:flex}.troqInventoryHead{display:flex;align-items:center;gap:15px;padding:16px 20px;border-bottom:1px solid #eee}.troqInventoryHead button{border:0;background:#f5f5f5;border-radius:11px;width:39px;height:39px}.troqInventoryHead h2{font-size:20px;margin:0}.troqInventoryBody{flex:1;overflow-y:auto;min-height:0;padding:20px 20px 90px;max-width:650px;width:100%;margin:auto}.troqInventoryBody label{display:block;font-size:14px;font-weight:650;margin:15px 0 7px}.troqInventoryBody input,.troqInventoryBody select{display:block;width:100%;height:49px;border:1px solid #ddd;border-radius:12px;padding:0 13px;font:16px Outfit,sans-serif;margin-top:7px;background:white}.troqInventoryGrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.troqInventoryCamera{position:relative;background:#111;border-radius:15px;overflow:hidden;min-height:150px;margin:12px 0}.troqInventoryCamera video{display:block;width:100%;max-height:240px;object-fit:cover}.troqInventoryCamera[hidden]{display:none}.troqInventoryAction{width:100%;padding:15px;border:0;border-radius:13px;background:#ff2380;color:#fff;font:700 16px Outfit,sans-serif;margin-top:12px}.troqInventoryAction:disabled{opacity:.5}.troqInventoryStatus{font-size:13px;color:#b42318;min-height:20px}.troqInventoryList{display:grid;gap:12px;margin-top:20px}.troqInventoryCard{padding:15px;border:1px solid #eee;border-radius:15px;display:flex;justify-content:space-between;gap:10px}.troqInventoryCard small{display:block;color:#777;margin-top:4px}.troqInventoryCard button{border:0;background:#fff0f6;border-radius:10px;padding:10px;color:#cc1663}.troqItemsAdd{border:0;background:#ff2380;color:#fff;padding:14px;border-radius:12px;font-weight:700;margin:12px 0}.troqItemsSearch{width:100%;padding:14px;border:1px solid #ddd;border-radius:12px;font-size:16px}
 </style>
+<style id="troqScanNavigationFix">
+/* Keep every navigation target tappable while the scanner layer is visible. */
+body:has(#troqScanPage.open) .troqBottomNav{position:fixed!important;z-index:1900!important;pointer-events:auto!important}
+body:has(#troqScanPage.open) .troqBottomNav button{pointer-events:auto!important}
+#troqScanPage{z-index:1740!important}
+#troqScanPage #troqScanBill{display:block;width:180px!important;max-width:calc(100% - 32px);flex:none;align-self:center;margin:4px auto 12px;padding:13px 16px;border:0;border-radius:13px;background:#ff2380;color:white;font:700 16px Outfit,sans-serif;text-align:center}
+#troqScanPage #troqScanBill[hidden]{display:none!important}
+#troqScanPage #troqScanBill.active{background:#fff;color:#151515}
+#troqScanPage #troqScanManual{align-self:center}
+</style>
 </head>
 
 <body>
@@ -2147,7 +2157,18 @@ troqField('troqBillPreview').onclick=async()=>{
  }catch(e){printWindow.close();err.textContent='Bill not saved. '+(e.message||'Please retry');}
  finally{troqBillPrinting=false;btn.disabled=false;btn.textContent='Print';}
 };
-document.querySelectorAll('.troqBottomNav button').forEach(b=>b.addEventListener('click',()=>b.dataset.tab==='scanner'?(document.getElementById('troqScanPage')?.classList.contains('open')?troqCloseScanPage():troqOpenScanPage()):troqShowDashboard(b.dataset.tab)));
+document.querySelectorAll('.troqBottomNav button').forEach(b=>b.addEventListener('click',()=>{
+ const tab=b.dataset.tab;
+ if(tab==='scanner'){
+   if(document.getElementById('troqScanPage')?.classList.contains('open'))troqCloseScanPage();
+   else troqOpenScanPage();
+   return;
+ }
+ // Camera is a separate layer: close it before navigating directly to ANY tab.
+ if(document.getElementById('troqScanPage')?.classList.contains('open'))troqCloseScanPage();
+ troqCloseScannerSheet();
+ troqShowDashboard(tab);
+}));
 function troqStartUserBusiness(){const b=troqMyData?.business;if(b?.name){troqShowDashboard('home');return;}troqDashboardEl.hidden=true;troqSetupEl.hidden=false;troqFillBusiness(b);troqShowSetupStep(0);}
 
 /* Restore verified session after refresh; never trust the cached token without server validation. */
@@ -2830,6 +2851,8 @@ function troqScanPageUI(){
  page=document.createElement('section');page.id='troqScanPage';page.className='troqScanPage';
  page.innerHTML='<div class="troqScanMain"><div class="troqScanViewport"><video id="troqScanVideo" autoplay muted playsinline></video><div class="troqScanFrame"></div></div><p id="troqScanPageStatus" role="status">Point your camera at a barcode</p><button type="button" id="troqScanRetry" class="troqInventoryAction">Allow camera / Retry</button><button type="button" id="troqScanManual" class="troqScanManual">Enter barcode manually</button></div><div class="troqScanBottom"><button type="button" id="troqScanBill" class="troqScanBill" hidden>Bill</button><div id="troqScanCart" hidden></div><button type="button" id="troqScanCheckout" hidden>Create bill</button></div>';
  document.body.appendChild(page);
+ // Keep the bill mode button immediately under the manual barcode action.
+ page.querySelector('#troqScanManual').after(page.querySelector('#troqScanBill'));
  page.querySelector('#troqScanBill').onclick=()=>{if(!troqInventory().length)return;troqScanBillMode=!troqScanBillMode;troqRenderScanCart();page.querySelector('#troqScanPageStatus').textContent=troqScanBillMode?'Bill mode: scan saved products':'Product mode: scan to add products';if(!troqScanStream)troqStartBarcodeScan(true);};
  page.querySelector('#troqScanCheckout').onclick=()=>{if(!troqScanCart.length)return;troqOpenBillEditor();const rows=[...troqField('troqBillLines').children];for(let i=0;i<troqScanCart.length;i++){const item=troqScanCart[i];if(i>0)troqBillAddProduct();const row=troqField('troqBillLines').children[i];if(!row)continue;const name=row.querySelector('input[data-name],input[type="text"]');const qty=row.querySelector('[data-qty]'),price=row.querySelector('[data-price]');if(name)name.value=item.name;if(qty)qty.value=item.qty;if(price)price.value=item.price;}troqBillRecalculate();};
  page.querySelector('#troqScanRetry').onclick=()=>troqStartBarcodeScan(true);
