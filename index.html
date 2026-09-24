@@ -338,6 +338,13 @@ body{
     cursor:pointer;
 }
 
+/* SMALL PINK LOGIN SPINNER */
+.proceedButton .troqBtnSpinner{display:none;width:19px;height:19px;border:2.5px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:troqSpin .65s linear infinite;margin:auto}
+.proceedButton.loading{background:#ff2380;color:#fff;cursor:wait}
+.proceedButton.loading .troqBtnLabel{display:none}
+.proceedButton.loading .troqBtnSpinner{display:block}
+@keyframes troqSpin{to{transform:rotate(360deg)}}
+
 /* WRONG PASSWORD RED BOX */
 
 .loginError{
@@ -1076,7 +1083,8 @@ body{
             type="button"
             disabled
         >
-            Proceed
+            <span class="troqBtnLabel">Proceed</span>
+            <span class="troqBtnSpinner" aria-hidden="true"></span>
         </button>
 
         <!-- ERROR BOX -->
@@ -1300,6 +1308,13 @@ const TROQ_SUPABASE_URL = "https://wxnmflkgxjnjinyawghf.supabase.co";
 const TROQ_SUPABASE_KEY = "sb_publishable_bXrJEV0B56dRpAX-cEyNVg_QxR2adg4";
 const troqDb = window.supabase.createClient(TROQ_SUPABASE_URL, TROQ_SUPABASE_KEY);
 let troqLoginBusy = false;
+const troqBtnLabel = document.querySelector("#proceedButton .troqBtnLabel");
+function troqButtonText(value){troqBtnLabel.textContent=value;}
+function troqButtonLoading(loading){
+    button.classList.toggle("loading",loading);
+    button.setAttribute("aria-busy",String(loading));
+    if(loading) button.disabled=true;
+}
 
 /* MAIN UI PAGES */
 
@@ -1496,18 +1511,18 @@ passwordInput.addEventListener(
     openSheet
 );
 
-/* PROCEED / LOGIN */
-
+/* PROCEED / LOGIN OR CREATE ACCOUNT */
 button.addEventListener("click", async()=>{
     if(button.disabled || troqLoginBusy) return;
     if(step === "mobile"){
         step = "password";
         mobileNumberText.textContent = "+91 " + mobileInput.value;
         mobileDisplay.classList.add("show");
-        loginTitle.textContent = "Enter your password";
+        loginTitle.textContent = "Enter or create your password";
         mobileBox.style.display = "none";
         passwordBox.classList.add("show");
-        button.textContent = "Login";
+        passwordInput.placeholder = "Password (minimum 8 characters)";
+        troqButtonText("Continue");
         updateButton();
         openSheet();
         passwordInput.focus();
@@ -1515,34 +1530,56 @@ button.addEventListener("click", async()=>{
     }
     const enteredMobile = mobileInput.value.trim();
     const enteredPassword = passwordInput.value;
+    if(enteredPassword.length < 8){showError("Use at least 8 characters for your password");return;}
     troqLoginBusy = true;
     button.disabled = true;
-    button.textContent = "Checking...";
+    troqButtonLoading(true);
     hideError();
     try{
-        const {data,error} = await troqDb.rpc("troq_user_mobile_login",{
-            p_mobile: enteredMobile,
-            p_password: enteredPassword
+        const {data,error} = await troqDb.rpc("troq_app_login_or_signup",{
+            p_mobile: enteredMobile, p_password: enteredPassword
         });
         if(error) throw error;
-        if(!data || !data.token || !data.user_id){
-            throw new Error("Invalid mobile number or password");
-        }
+        if(!data?.token || !data?.user_id) throw new Error("Login failed");
         sessionStorage.setItem("troqLogin", "true");
         sessionStorage.setItem("troqMobile", enteredMobile);
         sessionStorage.setItem("troqUserId", data.user_id);
         sessionStorage.setItem("troqUserToken", data.token);
         passwordInput.value = "";
-        hideError();
+        await troqLoadMyData();
         openMainUI(2);
-    }catch(err){
-        showError(err.message || "Login failed. Please try again.");
-    }finally{
+    }catch(err){showError(err.message || "Please try again");}
+    finally{
         troqLoginBusy = false;
-        button.textContent = "Login";
+        troqButtonLoading(false);
+        troqButtonText("Continue");
         updateButton();
     }
 });
+
+/* SERVER-SIDE USER DATA: ALWAYS SCOPED TO THE VERIFIED LOGIN TOKEN */
+let troqMyData = {};
+async function troqLoadMyData(){
+    const token = sessionStorage.getItem("troqUserToken");
+    if(!token) throw new Error("Login required");
+    const {data,error} = await troqDb.rpc("troq_app_load",{p_token:token});
+    if(error) throw error;
+    troqMyData = data || {};
+    window.dispatchEvent(new CustomEvent("troq-data-loaded",{detail:troqMyData}));
+    return troqMyData;
+}
+async function troqSaveMyData(nextData){
+    const token = sessionStorage.getItem("troqUserToken");
+    if(!token) throw new Error("Login required");
+    const {error} = await troqDb.rpc("troq_app_save",{
+        p_token:token,p_data:nextData
+    });
+    if(error) throw error;
+    troqMyData = nextData;
+    return true;
+}
+window.troqLoadMyData = troqLoadMyData;
+window.troqSaveMyData = troqSaveMyData;
 
 /* EDIT MOBILE */
 
@@ -1563,7 +1600,7 @@ editMobile.addEventListener("click",()=>{
 
     passwordInput.value = "";
 
-    button.textContent = "Proceed";
+    troqButtonText("Proceed");
 
     updateButton();
 
