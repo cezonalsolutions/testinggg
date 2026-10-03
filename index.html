@@ -2184,6 +2184,96 @@ function troqBillReceiptHtml(bill){
  const receiptSections=fullOrder.map(k=>parts[k]||'').join('');
  return '<!doctype html><html><head><meta charset="utf-8"><title>Bill '+esc(bill.id)+'</title><style>@page{size:80mm auto;margin:3mm}*{box-sizing:border-box}body{font:12px/1.45 Arial,sans-serif;color:#111;margin:0;padding:2mm;overflow-wrap:anywhere}.receipt{width:100%;max-width:74mm;margin:auto}.logo{display:block;max-width:27mm;max-height:25mm;object-fit:contain;margin:0 auto 6px}.shop{text-align:center;font-size:21px;font-weight:900;white-space:normal;overflow-wrap:anywhere;line-height:1.2;margin:5px 0}.sub,.meta{text-align:center;overflow-wrap:anywhere;margin:4px 0}.rule{border-top:1px dashed #111;margin:9px 0}.item{padding:7px 0;border-bottom:1px dashed #aaa}.itemName{font-size:12px;font-weight:600;overflow-wrap:anywhere}.itemNumbers{display:flex;justify-content:space-between;gap:8px;margin-top:4px}.total{display:flex;justify-content:space-between;font-size:16px;font-weight:800;margin-top:12px}.footer{text-align:center;margin-top:16px;font-size:10px}.t2 .shop{font-size:25px;border-bottom:2px solid #111;padding-bottom:5px}.t2 .total{border-top:2px solid #111;border-bottom:2px solid #111;padding:6px 0}.t3{border:2px solid #111;padding:7px}.t3 .item{border-bottom:1px solid #111}.t4 .rule{border-top:3px double #111}.t4 .shop{letter-spacing:1px}.t5 .rule,.t5 .item{border:0}.t5 .total{border-top:1px solid #111;padding-top:8px}.printTableHead,.printTableRow{display:grid;grid-template-columns:minmax(0,1fr) 24px 45px 53px;gap:3px;align-items:start;margin:6px 0;font-size:10px}.printTableHead{font-weight:bold;border-bottom:1px dashed #aaa;padding-bottom:4px}.printTableHead>*:not(:first-child),.printTableRow>*:not(:first-child){text-align:right}.printTableRow span{overflow-wrap:anywhere}@media print{body{margin:0}}</style></head><body><div class="receipt t'+esc(template)+'">'+receiptSections+'</div></body></html>';
 }
+/* MAIN BILL -> MOBILE THERMAL PRINTER TRIGGER
+   Uses the same verified writable BLE characteristic selected in TROQ printer setup.
+   ESC/POS text is intentionally ASCII-safe for broad 58/80 mm thermal-printer compatibility. */
+async function troqPrintSavedBillToBluetooth(bill){
+  if(!troqConnectedPrinter?.gatt?.connected || !troqWritableCharacteristic)
+    throw new Error('Mobile printer is not connected. Connect the printer first.');
+
+  const enc=new TextEncoder(), parts=[];
+  const add=(...b)=>parts.push(new Uint8Array(b));
+  const write=(v='')=>parts.push(enc.encode(String(v).replace(/[^\\x0A\\x0D\\x20-\\x7E]/g,'?')));
+  const width=32;
+  const clean=v=>String(v??'').replace(/[^\\x20-\\x7E]/g,'?');
+  const line=()=>write('-'.repeat(width)+'\
+');
+  const center=v=>{
+    const t=clean(v).slice(0,width);
+    write(' '.repeat(Math.max(0,Math.floor((width-t.length)/2)))+t+'\
+');
+  };
+  const money=v=>Number(v||0).toFixed(2);
+  const totalLine=(label,value)=>{
+    const l=clean(label),v=money(value);
+    write(l+' '.repeat(Math.max(1,width-l.length-v.length))+v+'\
+');
+  };
+  const wrap=(value,n)=>{
+    const out=[]; let rest=clean(value).trim();
+    if(!rest)return [''];
+    while(rest.length>n){
+      let cut=rest.lastIndexOf(' ',n); if(cut<1)cut=n;
+      out.push(rest.slice(0,cut)); rest=rest.slice(cut).trim();
+    }
+    if(rest)out.push(rest); return out;
+  };
+
+  add(27,64);              // initialize
+  add(27,97,1);            // center
+  add(27,33,32);           // emphasized brand
+  center(bill.business?.name || 'TROQ BILL');
+  add(27,33,0);
+  if(bill.business?.subtext) for(const x of wrap(bill.business.subtext,width)) center(x);
+  add(27,97,0);
+  line();
+  write('Bill: '+clean(bill.id)+'\
+');
+  write(new Date(bill.created_at||Date.now()).toLocaleString('en-IN')+'\
+');
+  if(bill.customer?.name) write('Customer: '+clean(bill.customer.name)+'\
+');
+  if(bill.customer?.mobile) write('Mobile: '+clean(bill.customer.mobile)+'\
+');
+  line();
+  write('ITEM              QTY      AMT\
+');
+  line();
+  for(const item of (bill.items||[])){
+    for(const n of wrap(item.name,18)) write(n+'\
+');
+    const q=String(item.qty).slice(0,5);
+    const a=money(item.amount ?? Number(item.qty)*Number(item.price));
+    write(' '.repeat(18)+q.padStart(5)+' '+a.padStart(8)+'\
+');
+  }
+  line();
+  totalLine('Subtotal',bill.subtotal);
+  if(Number(bill.gst_rate)>0) totalLine('GST '+Number(bill.gst_rate)+'%',bill.gst_amount);
+  add(27,33,32); totalLine('TOTAL',bill.total_amount); add(27,33,0);
+  line();
+  add(27,97,1); center('Thank you!'); write('\
+\
+');
+  add(27,97,0);
+  add(29,86,66,0);         // partial cut where supported
+
+  const total=parts.reduce((n,p)=>n+p.length,0), bytes=new Uint8Array(total);
+  let off=0; for(const part of parts){bytes.set(part,off);off+=part.length;}
+  const c=troqWritableCharacteristic;
+  // Small chunks are safest for low-MTU BLE thermal printers.
+  for(let i=0;i<bytes.length;i+=20){
+    const chunk=bytes.slice(i,i+20);
+    if(c.properties.writeWithoutResponse && c.writeValueWithoutResponse)
+      await c.writeValueWithoutResponse(chunk);
+    else if(c.writeValueWithResponse)
+      await c.writeValueWithResponse(chunk);
+    else
+      await c.writeValue(chunk);
+    await new Promise(r=>setTimeout(r,35));
+  }
+}
+
 async function troqPrintWindow(win){
   try{await Promise.all([...win.document.images].map(img=>img.complete?Promise.resolve():new Promise(resolve=>{img.onload=resolve;img.onerror=resolve;setTimeout(resolve,4000)})));if(win.document.fonts?.ready)await win.document.fonts.ready;win.focus();win.print();}
   catch(e){console.error('Print error',e);}
@@ -2218,8 +2308,16 @@ troqField('troqBillPreview').onclick=async()=>{
    const bills=Array.isArray(troqMyData.bills)?troqMyData.bills:[];
    await troqSaveMyData({...troqMyData,bills:[...bills,bill]});
    const html=troqBillReceiptHtml(bill);
-   printWindow.document.open();printWindow.document.write(html);printWindow.document.close();
-   troqPrintWindow(printWindow);
+   // MOBILE PRINTER TRIGGER: if a writable BLE thermal printer is already connected,
+   // send this bill directly as ESC/POS. Otherwise keep the existing OS print dialog.
+   if(!troqDesktopPC && troqConnectedPrinter?.gatt?.connected && troqWritableCharacteristic){
+     printWindow.close();
+     btn.textContent='Printing…';
+     await troqPrintSavedBillToBluetooth(bill);
+   }else{
+     printWindow.document.open();printWindow.document.write(html);printWindow.document.close();
+     await troqPrintWindow(printWindow);
+   }
    troqField('troqBillEditor').hidden=true;
    troqShowDashboard('home');
 
